@@ -4,11 +4,11 @@ import com.mongodb.MongoClient;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Morphia;
 import ru.spbau.db.entity.Branch;
-import ru.spbau.db.entity.Commit;
-import ru.spbau.db.entity.File;
+
+import java.util.List;
 
 /**
- * Created by airvan21 on 27.09.16.
+ *
  */
 public class DataBase {
     private final MongoClient mongo = new MongoClient();
@@ -16,12 +16,20 @@ public class DataBase {
 
     public DataBase(String name) {
         datastore = new Morphia().createDatastore(mongo, name);
-        initialize();
     }
 
-    private void initialize() {
-        datastore.save(new File());
-        datastore.save(new Commit());
-        datastore.save(new Branch());
+    // TODO: remove
+    public void init(String name) {
+        List<Branch> query = datastore
+                .find(Branch.class)
+                .field("name")
+                .equal(name)
+                .asList();
+
+        if (!query.isEmpty()) {
+            return;
+        }
+
+        datastore.save(new Branch(name, true));
     }
 }
