@@ -22,6 +22,14 @@ public class Branch {
         isActive = active;
     }
 
+    public ObjectId getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
     public boolean isActive() {
         return isActive;
     }
@@ -36,5 +44,14 @@ public class Branch {
 
     public void setClosed(boolean closed) {
         isClosed = closed;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (other == null || other.getClass() != getClass()) {
+            return false;
+        }
+
+        return id.equals(((Branch) other).id);
     }
 }

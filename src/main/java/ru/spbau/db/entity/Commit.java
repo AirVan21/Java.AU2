@@ -16,15 +16,19 @@ public class Commit {
     private String message;
     private String author;
     private Date date;
-    private String branch;
+    private String branchName;
 
     public Commit() {}
 
-    public Commit(String message, String author, Date date, String branch) {
+    public Commit(String message, String author, Date date, String branchName) {
         this.message = message;
         this.author = author;
         this.date = date;
-        this.branch = branch;
+        this.branchName = branchName;
+    }
+
+    public ObjectId getId() {
+        return id;
     }
 
     public String getMessage() {
@@ -39,7 +43,16 @@ public class Commit {
         return date;
     }
 
-    public String getBranch() {
-        return branch;
+    public String getBranchName() {
+        return branchName;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (other == null || other.getClass() != getClass()) {
+            return false;
+        }
+
+        return id.equals(((Commit) other).id);
     }
 }

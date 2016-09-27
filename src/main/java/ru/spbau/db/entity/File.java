@@ -23,6 +23,10 @@ public class File {
         this.path = path;
     }
 
+    public ObjectId getId() {
+        return id;
+    }
+
     public Commit getCommit() {
         return commit;
     }
@@ -33,5 +37,14 @@ public class File {
 
     public String getPath() {
         return path;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (other == null || other.getClass() != getClass()) {
+            return false;
+        }
+
+        return id.equals(((File) other).id);
     }
 }
