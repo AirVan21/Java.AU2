@@ -127,7 +127,7 @@ public class DataBase {
      * @param commit
      * @return
      */
-    public List<File> getComitedFiles(Commit commit) {
+    public List<File> getCommitedFiles(Commit commit) {
         return datastore
                 .find(File.class)
                 .field("commit")

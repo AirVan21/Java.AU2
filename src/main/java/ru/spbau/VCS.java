@@ -11,8 +11,10 @@ import java.util.List;
 public class VCS {
     private final static String DATABASE_NAME = "VCS";
     private final DataBase database = new DataBase(DATABASE_NAME);
+    private final String pathToWorkingFolder;
 
-    public VCS() {
+    public VCS(String pathToWorkingDir) {
+        pathToWorkingFolder = pathToWorkingDir;
         initialize();
     }
 

@@ -1,5 +1,6 @@
 package ru.spbau;
 
+import ru.spbau.utility.FileManager;
 import ru.spbau.utility.StatusManager;
 
 import java.util.List;
@@ -11,7 +12,7 @@ import java.util.logging.Logger;
 public class Shell {
     private final static String WRONG_COMMAND = "Command not found!";
     private final static Logger logger = Logger.getLogger(Shell.class.getName());
-    private final static VCS vcs = new VCS();
+    private final static VCS vcs = new VCS(FileManager.getPath());
 
     private enum Commands {
         STATUS("status")
