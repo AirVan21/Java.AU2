@@ -9,11 +9,10 @@ import java.util.List;
  *
  */
 public class VCS {
-    private final DataBase db;
     private final static String DATABASE_NAME = "VCS";
+    private final DataBase database = new DataBase(DATABASE_NAME);
 
     public VCS() {
-        db = new DataBase(DATABASE_NAME);
         initialize();
     }
 
@@ -29,8 +28,6 @@ public class VCS {
         return null;
     }
 
-    private static String getPath() {
-        return System.getProperty("user.dir");
+    public void makeCommit(String author, String message) {
     }
-
 }

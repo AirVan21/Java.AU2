@@ -122,6 +122,11 @@ public class DataBase {
                 .asList();
     }
 
+    /**
+     *
+     * @param commit
+     * @return
+     */
     public List<File> getComitedFiles(Commit commit) {
         return datastore
                 .find(File.class)
