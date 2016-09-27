@@ -10,6 +10,8 @@ public class VCS {
     private final static String DATABASE_NAME = "VCS";
 
     public VCS() {
-        db = new DataBase();
+        db = new DataBase(DATABASE_NAME);
     }
+
+
 }
