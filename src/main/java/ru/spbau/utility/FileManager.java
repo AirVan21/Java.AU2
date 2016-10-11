@@ -3,23 +3,62 @@ package ru.spbau.utility;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * Created by airvan21 on 27.09.16.
+ * FileManager class provides interface to FileSystem information
  */
 public class FileManager {
+    /**
+     * Returns current path
+     * @return path string
+     */
     public static String getPath() {
         return System.getProperty("user.dir");
     }
 
-    public static List<String> getFiles(String path) {
-        List<String> fileNames = FileUtils.listFiles(new File(getPath()), null, true)
+    public static Set<String> listFiles(String path, boolean isRecursive) {
+        return FileUtils.listFiles(new File(path), null, isRecursive)
                 .stream()
-                .map(file -> file.getName())
-                .collect(Collectors.toList());
+                .map(File::getName)
+                .collect(Collectors.toSet());
+    }
 
-        return fileNames;
+    /**
+     * Returns file for specified path
+     * @param filePath path string
+     * @return file if it exists
+     */
+    public static Optional<File> getFile(String filePath) {
+        File file;
+        try {
+            file = FileUtils.getFile(filePath);
+        } catch (NullPointerException exc) {
+            return Optional.empty();
+        }
+
+        return Optional.of(file);
+    }
+
+    /**
+     * Reads file to string
+     * @param file - text file
+     * @return string with file content
+     */
+    public static Optional<String> readFile(File file) {
+        String result;
+        try {
+            result = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
+        } catch (IOException exc) {
+            return Optional.empty();
+        }
+
+        return Optional.of(result);
     }
 }

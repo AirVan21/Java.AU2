@@ -16,15 +16,15 @@ import java.util.logging.Logger;
  * DataBase class represents a MongoDB wrapper for VCS project
  */
 public class DataBase {
-    private final MongoClient mongo = new MongoClient();
     private final Datastore datastore;
     private final Logger logger = Logger.getLogger(DataBase.class.getName());
 
     public DataBase(String name) {
+        final MongoClient mongo = new MongoClient();
         datastore = new Morphia().createDatastore(mongo, name);
     }
 
-    public Branch createBrunch(String name, boolean isActive) {
+    public Branch createBranch(String name, boolean isActive) {
         final Branch branch = new Branch(name, isActive);
         datastore.save(branch);
 
@@ -123,7 +123,7 @@ public class DataBase {
     }
 
     /**
-     *
+     * Get files which we
      * @param commit
      * @return
      */
@@ -133,5 +133,9 @@ public class DataBase {
                 .field("commit")
                 .equal(commit)
                 .asList();
+    }
+
+    public void dropDatabase() {
+        datastore.getDB().dropDatabase();
     }
 }

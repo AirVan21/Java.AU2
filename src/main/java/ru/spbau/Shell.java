@@ -20,8 +20,14 @@ public class Shell {
         , BRANCH("branch")
         , CHECKOUT("checkout")
         , COMMIT("commit")
-        , MERGE("merge");
-        
+        , MERGE("merge")
+        , INIT("init")
+        , ADD("add")
+        , RESET("reset")
+        , RM("rm")
+        , CLEAN("clean")
+        ;
+
         private final String source;
 
         Commands(final String input) {
@@ -62,6 +68,20 @@ public class Shell {
             case MERGE:
                 mergeCommand(arguments);
                 break;
+            case INIT:
+                initCommand(arguments);
+                break;
+            case ADD:
+                addCommand(arguments);
+                break;
+            case RESET:
+                resetCommand(arguments);
+                break;
+            case RM:
+                rmCommand(arguments);
+                break;
+            case CLEAN:
+                cleanCommand(arguments);
             default:
                 break;
         }
@@ -88,6 +108,26 @@ public class Shell {
     }
 
     private static void mergeCommand(List<String> arguments) {
+
+    }
+
+    private static void initCommand(List<String> arguments) {
+
+    }
+
+    private static void addCommand(List<String> arguments) {
+
+    }
+
+    private static void resetCommand(List<String> arguments) {
+
+    }
+
+    private static void rmCommand(List<String> argumnets) {
+
+    }
+
+    private static void cleanCommand(List<String> arguments) {
 
     }
 }

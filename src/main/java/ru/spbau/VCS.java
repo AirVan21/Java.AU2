@@ -15,11 +15,6 @@ public class VCS {
 
     public VCS(String pathToWorkingDir) {
         pathToWorkingFolder = pathToWorkingDir;
-        initialize();
-    }
-
-    public void initialize() {
-
     }
 
     public StatusManager getStatus() {
