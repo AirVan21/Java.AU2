@@ -11,7 +11,7 @@ import org.mongodb.morphia.annotations.Id;
 public class Branch {
     @Id
     private ObjectId id;
-    private String name;
+    private String name = "";
     private boolean isActive = false;
     private boolean isClosed = false;
 
@@ -44,6 +44,10 @@ public class Branch {
 
     public void setClosed(boolean closed) {
         isClosed = closed;
+    }
+
+    public boolean isEmpty() {
+        return name.isEmpty();
     }
 
     @Override

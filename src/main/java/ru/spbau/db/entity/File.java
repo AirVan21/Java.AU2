@@ -11,14 +11,13 @@ import org.mongodb.morphia.annotations.Id;
 public class File {
     @Id
     private ObjectId id;
-    private Commit commit;
     private String text;
     private String path;
+    private Commit commit = new Commit();
 
     public File() {}
 
-    public File(Commit commit, String text, String path) {
-        this.commit = commit;
+    public File(String text, String path) {
         this.text = text;
         this.path = path;
     }
@@ -27,16 +26,20 @@ public class File {
         return id;
     }
 
-    public Commit getCommit() {
-        return commit;
-    }
-
     public String getText() {
         return text;
     }
 
     public String getPath() {
         return path;
+    }
+
+    public Commit getCommit() {
+        return commit;
+    }
+
+    public void setCommit(Commit commit) {
+        this.commit = commit;
     }
 
     @Override

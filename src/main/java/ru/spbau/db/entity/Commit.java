@@ -5,6 +5,8 @@ import org.mongodb.morphia.annotations.Entity;
 import org.mongodb.morphia.annotations.Id;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
@@ -16,15 +18,16 @@ public class Commit {
     private String message;
     private String author;
     private Date date;
-    private String branchName;
+    private Branch branch;
+    private final Map<String, ObjectId> storageTable = new HashMap<>();
 
     public Commit() {}
 
-    public Commit(String message, String author, Date date, String branchName) {
+    public Commit(String message, String author, Date date, Branch branch) {
         this.message = message;
         this.author = author;
         this.date = date;
-        this.branchName = branchName;
+        this.branch = branch;
     }
 
     public ObjectId getId() {
@@ -43,8 +46,20 @@ public class Commit {
         return date;
     }
 
-    public String getBranchName() {
-        return branchName;
+    public Branch getBranch() {
+        return branch;
+    }
+
+    public Map<String, ObjectId> getStorageTable() {
+        return storageTable;
+    }
+
+    public void addFile(String path, ObjectId fileId) {
+        storageTable.put(path, fileId);
+    }
+
+    public void removeFile(String path) {
+        storageTable.remove(path);
     }
 
     @Override
@@ -55,4 +70,5 @@ public class Commit {
 
         return id.equals(((Commit) other).id);
     }
+
 }

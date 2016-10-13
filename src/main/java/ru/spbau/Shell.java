@@ -88,7 +88,6 @@ public class Shell {
     }
 
     private static void  statusCommand(List<String> arguments) {
-        StatusManager status = vcs.getStatus();
     }
 
     private static void logCommand(List<String> arguments) {

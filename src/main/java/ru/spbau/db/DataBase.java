@@ -85,9 +85,16 @@ public class DataBase {
         datastore.update(branch.get(), update);
     }
 
+    /**
+     * TODO: rewrite
+     * @param files
+     * @param message
+     * @param author
+     * @param branch
+     */
     public void makeCommit(Map<String, String> files, String message, String author, Branch branch) {
         final Date currentDate = Calendar.getInstance().getTime();
-        final Commit commit = new Commit(message, author, currentDate, branch.getName());
+        final Commit commit = new Commit(message, author, currentDate, branch);
 
         // Save commit
         datastore.save(commit);
@@ -95,7 +102,7 @@ public class DataBase {
         // Save files
         files.entrySet()
                 .stream()
-                .map(item -> new File(commit, item.getKey(), item.getValue()))
+                .map(item -> new File(item.getKey(), item.getValue()))
                 .forEach(datastore::save);
     }
 
