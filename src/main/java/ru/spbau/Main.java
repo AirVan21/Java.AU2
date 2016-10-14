@@ -1,6 +1,7 @@
 package ru.spbau;
 
 import java.util.Arrays;
+import java.util.List;
 
 
 /**
@@ -8,6 +9,7 @@ import java.util.Arrays;
  */
 public class Main {
     public static void main(String[] args) {
-        Shell.execute(Arrays.asList(args));
+        List<String> input = Arrays.asList("git", "rm");
+        Shell.execute(input);
     }
 }

@@ -1,7 +1,6 @@
 package ru.spbau;
 
 import ru.spbau.utility.FileManager;
-import ru.spbau.utility.StatusManager;
 
 import java.util.List;
 import java.util.logging.Logger;
@@ -36,13 +35,18 @@ public class Shell {
     }
     
     public static void execute(List<String> input) {
-        if (input.isEmpty()) {
+        if (input.size() < 2) {
             return;
         }
-        String name = input.remove(0);
 
+        final String git = input.get(0);
+        if (!git.toLowerCase().equals("git")) {
+            return;
+        }
+
+        String name = input.get(1);
         try {
-            processCommand(Commands.valueOf(name), input);
+            processCommand(Commands.valueOf(name.toLowerCase()), input);
         } catch (IllegalArgumentException e) {
             logger.info(WRONG_COMMAND);
         }
@@ -88,6 +92,7 @@ public class Shell {
     }
 
     private static void  statusCommand(List<String> arguments) {
+        vcs.getStatus();
     }
 
     private static void logCommand(List<String> arguments) {
@@ -111,7 +116,7 @@ public class Shell {
     }
 
     private static void initCommand(List<String> arguments) {
-
+        vcs.makeInit();
     }
 
     private static void addCommand(List<String> arguments) {

@@ -1,30 +1,43 @@
 package ru.spbau.utility;
 
+import ru.spbau.db.entity.Commit;
+
+import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  *
  */
 public class StatusManager {
-    private final Set<String> addedFiles;
-    private final Set<String> deletedFiles;
-    private final Set<String> modifiedFiles;
-
-    public StatusManager(Set<String> addedFiles, Set<String> deletedFiles, Set<String> modifiedFiles) {
-        this.addedFiles = addedFiles;
-        this.deletedFiles = deletedFiles;
-        this.modifiedFiles = modifiedFiles;
+    public static Set<String> getAddedFiles(Commit current, Commit previous) {
+        return current.getStorageTable()
+                .keySet()
+                .stream()
+                .filter(item -> !previous.getStorageTable().containsKey(item))
+                .collect(Collectors.toSet());
     }
 
-    public Set<String> getAddedFiles() {
-        return addedFiles;
+    public static Set<String> getDeletedFiles(Commit current, Commit previous) {
+        return previous.getStorageTable()
+                .keySet()
+                .stream()
+                .filter(item -> !current.getStorageTable().containsKey(item))
+                .collect(Collectors.toSet());
     }
 
-    public Set<String> getDeletedFiles() {
-        return deletedFiles;
-    }
+    public static Set<String> getModifiedFiles(Commit current, Commit previous) {
+        final Set<String> result = new HashSet<>(current.getStorageTable().keySet());
+        result.retainAll(previous.getStorageTable().keySet());
 
-    public Set<String> getModifiedFiles() {
-        return modifiedFiles;
+        return result
+                .stream()
+                .filter(item -> !current
+                        .getStorageTable()
+                        .get(item)
+                        .equals(previous
+                                .getStorageTable()
+                                .get(item)))
+                .collect(Collectors.toSet());
     }
 }

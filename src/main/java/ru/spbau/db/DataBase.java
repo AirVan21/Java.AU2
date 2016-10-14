@@ -130,7 +130,6 @@ public class DataBase {
     }
 
     /**
-     * Get files which we
      * @param commit
      * @return
      */
@@ -141,6 +140,22 @@ public class DataBase {
                 .equal(commit)
                 .asList();
     }
+
+    /**
+     * Sorts by property
+     * @return
+     */
+    public Optional<Commit> getLastCommittedRevision() {
+        List<Commit> revisions = datastore
+                .find(Commit.class)
+                .order("date")
+                .asList();
+
+        return revisions.isEmpty()
+                ? Optional.empty()
+                : Optional.of(revisions.get(revisions.size() - 1));
+    }
+
 
     public void dropDatabase() {
         datastore.getDB().dropDatabase();
