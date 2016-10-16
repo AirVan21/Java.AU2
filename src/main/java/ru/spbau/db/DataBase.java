@@ -52,6 +52,7 @@ public class DataBase {
             return;
         }
 
+        currentBranch.get().setActive(false);
         UpdateOperations<Branch> update = datastore
                 .createUpdateOperations(Branch.class)
                 .set("isActive", false);
@@ -73,6 +74,14 @@ public class DataBase {
         return Optional.of(query.get(0));
     }
 
+    public List<Branch> getBranches() {
+        return datastore
+                .find(Branch.class)
+                .field("isClosed")
+                .equal(false)
+                .asList();
+    }
+
     public void closeBranch(String name) {
         Optional<Branch> branch = getBranch(name);
         if (!branch.isPresent()) {
@@ -87,10 +96,6 @@ public class DataBase {
 
     /**
      * TODO: rewrite
-     * @param files
-     * @param message
-     * @param author
-     * @param branch
      */
     public void makeCommit(Map<String, String> files, String message, String author, Branch branch) {
         final Date currentDate = Calendar.getInstance().getTime();

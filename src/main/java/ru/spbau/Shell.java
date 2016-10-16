@@ -59,10 +59,10 @@ public class Shell {
     private void processCommand(Commands command, List<String> arguments) {
         switch (command) {
             case STATUS:
-                statusCommand(arguments);
+                statusCommand();
                 break;
             case LOG:
-                logCommand(arguments);
+                logCommand();
                 break;
             case BRANCH:
                 branchCommand(arguments);
@@ -95,16 +95,22 @@ public class Shell {
         }
     }
 
-    private void statusCommand(List<String> arguments) {
+    private void statusCommand() {
         System.out.println(vcs.getStatus());
     }
 
-    private void logCommand(List<String> arguments) {
+    private void logCommand() {
         System.out.println(vcs.getLog());
     }
 
+    /**
+     * git branch
+     * git branch BRANCH_NAME
+     * git branch -d BRANCH_NAME
+     */
     private void branchCommand(List<String> arguments) {
-
+        // Use Apache Commons for argument parsing
+        System.out.println(vcs.getBranches());
     }
 
     private void checkoutCommand(List<String> arguments) {

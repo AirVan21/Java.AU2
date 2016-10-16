@@ -26,6 +26,15 @@ public class VCS {
         pathToWorkDir = pathToWorkingDir;
     }
 
+    public void makeInit() {
+        if (branch.isEmpty()) {
+            final boolean active = true;
+            branch = database.createBranch(MASTER_NAME, active);
+        } else {
+            GlobalLogger.log("Repository is already initiated!");
+        }
+    }
+
     public String getStatus() {
         final Optional<Commit> lastCommittedRevision = database.getLastCommittedRevision();
         final Commit previousRevision = lastCommittedRevision.isPresent()
@@ -52,16 +61,15 @@ public class VCS {
         return sb.toString();
     }
 
-    public void makeCommit(String author, String message) {
+    String getBranches() {
+        List<Branch> branches = database.getBranches();
+        final StringBuilder sb = new StringBuilder();
+        branches.forEach(item -> sb.append(item.getName()).append("\n"));
 
+        return sb.toString();
     }
 
-    public void makeInit() {
-        if (branch.isEmpty()) {
-            final boolean active = true;
-            branch = database.createBranch(MASTER_NAME, active);
-        } else {
-            GlobalLogger.log("Repository is already initiated!");
-        }
+    public void makeCommit(String author, String message) {
+
     }
 }
