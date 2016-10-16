@@ -1,15 +1,21 @@
 package ru.spbau;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.List;
 
 
 /**
+ *  Main class
  *
+ *  Main class is used as a simple "how to" example
  */
 public class Main {
+    private final static String TEST_DIR = "src/test/resources/";
+
     public static void main(String[] args) {
-        List<String> input = Arrays.asList("git", "rm");
-        Shell.execute(input);
+        Path path = Paths.get(TEST_DIR);
+        Shell shell = new Shell(path);
+        shell.execute(Arrays.asList("git status".split(" ")));
     }
 }

@@ -142,7 +142,7 @@ public class DataBase {
     }
 
     /**
-     * Sorts by property
+     * Gets last committed revison
      * @return
      */
     public Optional<Commit> getLastCommittedRevision() {

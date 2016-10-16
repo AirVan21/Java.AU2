@@ -1,7 +1,6 @@
 package ru.spbau;
 
-import ru.spbau.utility.FileManager;
-
+import java.nio.file.Path;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -10,8 +9,9 @@ import java.util.logging.Logger;
  */
 public class Shell {
     private final static String WRONG_COMMAND = "Command not found!";
+    private final static String KEY_WORD = "git";
     private final static Logger logger = Logger.getLogger(Shell.class.getName());
-    private final static VCS vcs = new VCS(FileManager.getPath());
+    private final VCS vcs;
 
     private enum Commands {
         STATUS("status")
@@ -33,8 +33,12 @@ public class Shell {
             source = input;
         }
     }
+
+    public Shell(Path path) {
+        vcs = new VCS(path);
+    }
     
-    public static void execute(List<String> input) {
+    public void execute(List<String> input) {
         if (input.size() < 2) {
             return;
         }
@@ -52,7 +56,7 @@ public class Shell {
         }
     }
     
-    private static void processCommand(Commands command, List<String> arguments) {
+    private void processCommand(Commands command, List<String> arguments) {
         switch (command) {
             case STATUS:
                 statusCommand(arguments);
@@ -91,47 +95,47 @@ public class Shell {
         }
     }
 
-    private static void  statusCommand(List<String> arguments) {
-        vcs.getStatus();
+    private void statusCommand(List<String> arguments) {
+        System.out.println(vcs.getStatus());
     }
 
-    private static void logCommand(List<String> arguments) {
-        vcs.getLog();
+    private void logCommand(List<String> arguments) {
+        System.out.println(vcs.getLog());
     }
 
-    private static void branchCommand(List<String> arguments) {
-
-    }
-
-    private static void checkoutCommand(List<String> arguments) {
+    private void branchCommand(List<String> arguments) {
 
     }
 
-    private static void commitCommand(List<String> arguments) {
+    private void checkoutCommand(List<String> arguments) {
 
     }
 
-    private static void mergeCommand(List<String> arguments) {
+    private void commitCommand(List<String> arguments) {
 
     }
 
-    private static void initCommand(List<String> arguments) {
+    private void mergeCommand(List<String> arguments) {
+
+    }
+
+    private void initCommand(List<String> arguments) {
         vcs.makeInit();
     }
 
-    private static void addCommand(List<String> arguments) {
+    private void addCommand(List<String> arguments) {
 
     }
 
-    private static void resetCommand(List<String> arguments) {
+    private void resetCommand(List<String> arguments) {
 
     }
 
-    private static void rmCommand(List<String> argumnets) {
+    private void rmCommand(List<String> argumnets) {
 
     }
 
-    private static void cleanCommand(List<String> arguments) {
+    private void cleanCommand(List<String> arguments) {
 
     }
 }
