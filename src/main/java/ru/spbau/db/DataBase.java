@@ -3,6 +3,7 @@ package ru.spbau.db;
 import com.mongodb.MongoClient;
 import org.bson.types.ObjectId;
 import org.mongodb.morphia.Datastore;
+import org.mongodb.morphia.Key;
 import org.mongodb.morphia.Morphia;
 import org.mongodb.morphia.query.UpdateOperations;
 import ru.spbau.db.entity.Branch;
@@ -161,6 +162,9 @@ public class DataBase {
                 : Optional.of(revisions.get(revisions.size() - 1));
     }
 
+    public ObjectId addFile(File file) {
+        return (ObjectId) datastore.save(file).getId();
+    }
 
     public void dropDatabase() {
         datastore.getDB().dropDatabase();

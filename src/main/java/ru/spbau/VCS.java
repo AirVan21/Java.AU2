@@ -1,8 +1,11 @@
 package ru.spbau;
 
+import org.bson.types.ObjectId;
 import ru.spbau.db.DataBase;
 import ru.spbau.db.entity.Branch;
 import ru.spbau.db.entity.Commit;
+import ru.spbau.db.entity.File;
+import ru.spbau.utility.FileManager;
 import ru.spbau.utility.GlobalLogger;
 import ru.spbau.utility.StatusManager;
 
@@ -10,6 +13,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -24,6 +28,18 @@ public class VCS {
 
     public VCS(Path pathToWorkingDir) {
         pathToWorkDir = pathToWorkingDir;
+    }
+
+    public Branch getBranch() {
+        return branch;
+    }
+
+    public Commit getRevision() {
+        return revision;
+    }
+
+    public void dropVCSInfo() {
+        database.dropDatabase();
     }
 
     public void makeInit() {
@@ -71,5 +87,18 @@ public class VCS {
 
     public void makeCommit(String author, String message) {
 
+    }
+
+    public void makeAdd(List<String> files) {
+        final boolean isRecursive = true;
+        final Set<String> availableFiles = FileManager.listFiles(pathToWorkDir.toString(), isRecursive);
+        final List<File> addedFiles = files.stream()
+                .filter(availableFiles::contains)
+                .map(File::new)
+                .collect(Collectors.toList());
+        addedFiles.forEach(file -> {
+            ObjectId id = database.addFile(file);
+            revision.addFile(file.getPath(), id);
+        });
     }
 }

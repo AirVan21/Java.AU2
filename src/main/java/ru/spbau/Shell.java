@@ -130,7 +130,6 @@ public class Shell {
     }
 
     private void addCommand(List<String> arguments) {
-
     }
 
     private void resetCommand(List<String> arguments) {
