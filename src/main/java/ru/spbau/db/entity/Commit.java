@@ -16,16 +16,14 @@ public class Commit {
     @Id
     private ObjectId id;
     private String message;
-    private String author;
     private Date date;
     private Branch branch;
     private final Map<String, ObjectId> storageTable = new HashMap<>();
 
     public Commit() {}
 
-    public Commit(String message, String author, Date date, Branch branch) {
+    public Commit(String message, Date date, Branch branch) {
         this.message = message;
-        this.author = author;
         this.date = date;
         this.branch = branch;
     }
@@ -36,10 +34,6 @@ public class Commit {
 
     public String getMessage() {
         return message;
-    }
-
-    public String getAuthor() {
-        return author;
     }
 
     public Date getDate() {

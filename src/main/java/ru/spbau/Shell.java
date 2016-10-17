@@ -1,5 +1,7 @@
 package ru.spbau;
 
+import ru.spbau.utility.GlobalLogger;
+
 import java.nio.file.Path;
 import java.util.List;
 import java.util.logging.Logger;
@@ -44,7 +46,7 @@ public class Shell {
         }
 
         final String git = input.get(0);
-        if (!git.toLowerCase().equals("git")) {
+        if (!git.toLowerCase().equals(KEY_WORD)) {
             return;
         }
 
@@ -89,7 +91,7 @@ public class Shell {
                 rmCommand(arguments);
                 break;
             case CLEAN:
-                cleanCommand(arguments);
+                cleanCommand();
             default:
                 break;
         }
@@ -107,12 +109,19 @@ public class Shell {
      * git branch
      * git branch BRANCH_NAME
      * git branch -d BRANCH_NAME
+     *
+     * @param arguments
      */
     private void branchCommand(List<String> arguments) {
         // Use Apache Commons for argument parsing
         System.out.println(vcs.getBranches());
     }
 
+    /**
+     * git checkout BRANCH_NAME
+     *
+     * @param arguments
+     */
     private void checkoutCommand(List<String> arguments) {
 
     }
@@ -130,17 +139,26 @@ public class Shell {
     }
 
     private void addCommand(List<String> arguments) {
+        if (arguments.isEmpty()) {
+            GlobalLogger.log("Wrong git add command format!");
+            return;
+        }
+        vcs.makeAdd(arguments);
     }
 
     private void resetCommand(List<String> arguments) {
 
     }
 
-    private void rmCommand(List<String> argumnets) {
-
+    private void rmCommand(List<String> arguments) {
+        if (arguments.isEmpty()) {
+            GlobalLogger.log("Wrong git rm command format!");
+            return;
+        }
+        vcs.makeRm(arguments);
     }
 
-    private void cleanCommand(List<String> arguments) {
-
+    private void cleanCommand() {
+        vcs.makeClean();
     }
 }

@@ -101,4 +101,24 @@ public class VCS {
             revision.addFile(file.getPath(), id);
         });
     }
+
+    public void makeClean() {
+        final boolean isRecursive = true;
+        final Set<String> availableFiles = FileManager.listFiles(pathToWorkDir.toString(), isRecursive);
+        availableFiles
+                .stream()
+                .filter(item -> !revision.getStorageTable().containsKey(item))
+                .forEach(FileManager::deleteFile);
+    }
+
+    public void makeRm(List<String> files) {
+        final boolean isRecursive = true;
+        final Set<String> availableFiles = FileManager.listFiles(pathToWorkDir.toString(), isRecursive);
+        files.stream()
+                .filter(availableFiles::contains)
+                .forEach(file -> {
+                    revision.removeFile(file);
+                    FileManager.deleteFile(file);
+                });
+    }
 }
