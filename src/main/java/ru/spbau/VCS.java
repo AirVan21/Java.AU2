@@ -10,9 +10,7 @@ import ru.spbau.utility.GlobalLogger;
 import ru.spbau.utility.StatusManager;
 
 import java.nio.file.Path;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -40,6 +38,10 @@ public class VCS {
 
     public void dropVCSInfo() {
         database.dropDatabase();
+    }
+
+    public boolean isValid() {
+        return !branch.isEmpty();
     }
 
     public void makeInit() {
@@ -85,8 +87,13 @@ public class VCS {
         return sb.toString();
     }
 
-    public void makeCommit(String author, String message) {
+    public void makeCommit(String message) {
+        final Date currentDate = Calendar.getInstance().getTime();
+        revision.message = message;
+        revision.date = currentDate;
+        revision.branchName = branch.getName();
 
+        database.makeCommit(revision);
     }
 
     public void makeAdd(List<String> files) {
@@ -107,7 +114,7 @@ public class VCS {
         final Set<String> availableFiles = FileManager.listFiles(pathToWorkDir.toString(), isRecursive);
         availableFiles
                 .stream()
-                .filter(item -> !revision.getStorageTable().containsKey(item))
+                .filter(item -> !revision.storageTable.containsKey(item))
                 .forEach(FileManager::deleteFile);
     }
 
@@ -120,5 +127,9 @@ public class VCS {
                     revision.removeFile(file);
                     FileManager.deleteFile(file);
                 });
+    }
+
+    public void makeCheckout(String branchName) {
+        
     }
 }

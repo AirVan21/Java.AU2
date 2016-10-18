@@ -95,21 +95,9 @@ public class DataBase {
         datastore.update(branch.get(), update);
     }
 
-    /**
-     * TODO: rewrite
-     */
-    public void makeCommit(Map<String, String> files, String message, String author, Branch branch) {
-        final Date currentDate = Calendar.getInstance().getTime();
-        final Commit commit = new Commit(message, author, currentDate, branch);
-
+    public void makeCommit(Commit commit) {
         // Save commit
         datastore.save(commit);
-
-        // Save files
-        files.entrySet()
-                .stream()
-                .map(item -> new File(item.getKey(), item.getValue()))
-                .forEach(datastore::save);
     }
 
     public Optional<Commit> getCommit(ObjectId id) {
@@ -151,9 +139,11 @@ public class DataBase {
      * Gets last committed revison
      * @return
      */
-    public Optional<Commit> getLastCommittedRevision() {
+    public Optional<Commit> getLastCommittedRevision(Branch branch) {
         List<Commit> revisions = datastore
                 .find(Commit.class)
+                .field("branch")
+                .equal(branch)
                 .order("date")
                 .asList();
 

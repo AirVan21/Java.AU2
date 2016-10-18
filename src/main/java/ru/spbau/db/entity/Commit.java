@@ -9,43 +9,27 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- *
+ * Commit class represents revision entity in VCS project
  */
 @Entity("Commit")
 public class Commit {
     @Id
     private ObjectId id;
-    private String message;
-    private Date date;
-    private Branch branch;
-    private final Map<String, ObjectId> storageTable = new HashMap<>();
+    public String message;
+    public Date date;
+    public String branchName;
+    public final Map<String, ObjectId> storageTable = new HashMap<>();
 
     public Commit() {}
 
-    public Commit(String message, Date date, Branch branch) {
+    public Commit(String message, Date date, String branch) {
         this.message = message;
         this.date = date;
-        this.branch = branch;
+        this.branchName = branch;
     }
 
     public ObjectId getId() {
         return id;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public Date getDate() {
-        return date;
-    }
-
-    public Branch getBranch() {
-        return branch;
-    }
-
-    public Map<String, ObjectId> getStorageTable() {
-        return storageTable;
     }
 
     public void addFile(String path, ObjectId fileId) {

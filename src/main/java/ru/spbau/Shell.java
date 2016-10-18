@@ -79,7 +79,7 @@ public class Shell {
                 mergeCommand(arguments);
                 break;
             case INIT:
-                initCommand(arguments);
+                initCommand();
                 break;
             case ADD:
                 addCommand(arguments);
@@ -98,11 +98,15 @@ public class Shell {
     }
 
     private void statusCommand() {
-        System.out.println(vcs.getStatus());
+        if (vcs.isValid()) {
+            System.out.println(vcs.getStatus());
+        }
     }
 
     private void logCommand() {
-        System.out.println(vcs.getLog());
+        if (vcs.isValid()) {
+            System.out.println(vcs.getLog());
+        }
     }
 
     /**
@@ -113,8 +117,14 @@ public class Shell {
      * @param arguments
      */
     private void branchCommand(List<String> arguments) {
-        // Use Apache Commons for argument parsing
-        System.out.println(vcs.getBranches());
+        // TODO: Use Apache Commons for argument parsing
+        if (!vcs.isValid()) {
+            return;
+        }
+
+        if (arguments.isEmpty()) {
+            System.out.println(vcs.getBranches());
+        }
     }
 
     /**
@@ -123,18 +133,33 @@ public class Shell {
      * @param arguments
      */
     private void checkoutCommand(List<String> arguments) {
+        if (!vcs.isValid()) {
+            return;
+        }
 
     }
 
+    /**
+     * git commit COMMIT_MESSAGE
+     *
+     * @param arguments list with commit command arguments
+     */
     private void commitCommand(List<String> arguments) {
-
+        if (arguments.isEmpty() || arguments.size() > 1) {
+            GlobalLogger.log("Wrong git rm command format!");
+            return;
+        }
+        vcs.makeCommit(arguments.get(0));
     }
 
     private void mergeCommand(List<String> arguments) {
-
+        if (arguments.isEmpty()) {
+            GlobalLogger.log("Wrong git merge command format!");
+            return;
+        }
     }
 
-    private void initCommand(List<String> arguments) {
+    private void initCommand() {
         vcs.makeInit();
     }
 

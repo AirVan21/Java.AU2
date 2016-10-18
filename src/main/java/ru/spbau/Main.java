@@ -16,6 +16,6 @@ public class Main {
     public static void main(String[] args) {
         Path path = Paths.get(TEST_DIR);
         Shell shell = new Shell(path);
-        shell.execute(Arrays.asList("git status".split(" ")));
+        shell.execute(Arrays.asList("git init".split(" ")));
     }
 }
