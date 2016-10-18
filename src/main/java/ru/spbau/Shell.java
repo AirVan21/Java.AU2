@@ -149,7 +149,7 @@ public class Shell {
     }
 
     private void mergeCommand(List<String> arguments) {
-        if (arguments.isEmpty()) {
+        if (arguments.isEmpty() || arguments.size() > 1) {
             GlobalLogger.log("Wrong git merge command format!");
             return;
         }

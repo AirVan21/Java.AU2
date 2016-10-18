@@ -1,12 +1,15 @@
 package ru.spbau.db.entity;
 
+import com.mongodb.BasicDBObject;
 import org.bson.types.ObjectId;
 import org.mongodb.morphia.annotations.Entity;
 import org.mongodb.morphia.annotations.Id;
+import org.mongodb.morphia.annotations.NotSaved;
 
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Commit class represents revision entity in VCS project
@@ -18,7 +21,9 @@ public class Commit {
     public String message = "";
     public Date date;
     public String branchName = "";
+    @NotSaved
     public Map<String, ObjectId> storageTable = new HashMap<>();
+    public BasicDBObject mongoTable = new BasicDBObject();
 
     public Commit() {}
 

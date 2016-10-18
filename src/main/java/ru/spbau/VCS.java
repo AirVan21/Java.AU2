@@ -48,6 +48,8 @@ public class VCS {
         if (branch.isEmpty()) {
             final boolean active = true;
             branch = database.createBranch(MASTER_NAME, active);
+            database.makeCommit("Initialization commit", branch.getName(), revision);
+            revision = new Commit(revision.storageTable);
         } else {
             GlobalLogger.log("Repository is already initiated!");
         }
@@ -71,7 +73,7 @@ public class VCS {
         return sb.toString();
     }
 
-    String getLog() {
+    public String getLog() {
         List<Commit> commits = database.getLog(branch);
         final StringBuilder sb = new StringBuilder();
         commits.forEach(commit -> sb.append(commit).append("\n"));
@@ -79,7 +81,7 @@ public class VCS {
         return sb.toString();
     }
 
-    String getBranches() {
+    public String getBranches() {
         List<Branch> branches = database.getBranches();
         final StringBuilder sb = new StringBuilder();
         branches.forEach(item -> sb.append(item.getName()).append("\n"));
@@ -87,13 +89,8 @@ public class VCS {
         return sb.toString();
     }
 
-        public void makeCommit(String message) {
-        final Date currentDate = Calendar.getInstance().getTime();
-        revision.message = message;
-        revision.date = currentDate;
-        revision.branchName = branch.getName();
-        database.makeCommit(revision);
-
+    public void makeCommit(String message) {
+        database.makeCommit(message, branch.getName(), revision);
         revision = new Commit(revision.storageTable);
     }
 
@@ -173,6 +170,12 @@ public class VCS {
                     }
                 }
             }
+        }
+    }
+
+    public void makeMerge(String branchName) {
+        if (branchName.equals(branch.getName())) {
+            return;
         }
     }
 }

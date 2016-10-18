@@ -1,5 +1,6 @@
 package ru.spbau.db;
 
+import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClient;
 import org.bson.types.ObjectId;
 import org.mongodb.morphia.Datastore;
@@ -95,7 +96,16 @@ public class DataBase {
         datastore.update(branch.get(), update);
     }
 
-    public void makeCommit(Commit commit) {
+    public void makeCommit(String message, String branchName, Commit commit) {
+        final Date currentDate = Calendar.getInstance().getTime();
+        commit.message = message;
+        commit.date = currentDate;
+        commit.branchName = branchName;
+        final List<String> paths = new ArrayList<>(commit.storageTable.keySet());
+        final List<ObjectId> ids = new ArrayList<>(commit.storageTable.values());
+        for (int i = 0; i < paths.size(); ++i) {
+            commit.mongoTable.put(ids.get(i).toString(), paths.get(i));
+        }
         // Save commit
         datastore.save(commit);
     }
@@ -148,7 +158,7 @@ public class DataBase {
                 .asList();
 
         return revisions.isEmpty()
-                ? Optional.empty()
+                ? Optional.empty() // TODO: restore map
                 : Optional.of(revisions.get(revisions.size() - 1));
     }
 
