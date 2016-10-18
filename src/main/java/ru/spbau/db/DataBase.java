@@ -142,7 +142,7 @@ public class DataBase {
     public Optional<Commit> getLastCommittedRevision(String branchName) {
         List<Commit> revisions = datastore
                 .find(Commit.class)
-                .field("branch")
+                .field("branchName")
                 .equal(branchName)
                 .order("date")
                 .asList();
@@ -154,6 +154,12 @@ public class DataBase {
 
     public ObjectId addFile(File file) {
         return (ObjectId) datastore.save(file).getId();
+    }
+
+    public List<File> getFiles() {
+        return datastore
+                .find(File.class)
+                .asList();
     }
 
     public void dropDatabase() {

@@ -117,7 +117,6 @@ public class Shell {
      * @param arguments
      */
     private void branchCommand(List<String> arguments) {
-        // TODO: Use Apache Commons for argument parsing
         if (arguments.isEmpty()) {
             System.out.println(vcs.getBranches());
         }
@@ -126,10 +125,14 @@ public class Shell {
     /**
      * git checkout BRANCH_NAME
      *
-     * @param arguments
+     * @param arguments list with one argument (BRANCH_NAME)
      */
     private void checkoutCommand(List<String> arguments) {
-
+        if (arguments.isEmpty() || arguments.size() > 1) {
+            GlobalLogger.log("Wrong git commit command format!");
+            return;
+        }
+        vcs.makeCheckout(arguments.get(0));
     }
 
     /**
@@ -139,7 +142,7 @@ public class Shell {
      */
     private void commitCommand(List<String> arguments) {
         if (arguments.isEmpty() || arguments.size() > 1) {
-            GlobalLogger.log("Wrong git rm command format!");
+            GlobalLogger.log("Wrong git commit command format!");
             return;
         }
         vcs.makeCommit(arguments.get(0));
@@ -166,10 +169,10 @@ public class Shell {
 
     private void resetCommand(List<String> arguments) {
         if (arguments.isEmpty()) {
-            GlobalLogger.log("Wrong git add command format!");
+            GlobalLogger.log("Wrong git reset command format!");
             return;
         }
-
+        vcs.makeReset(arguments);
     }
 
     private void rmCommand(List<String> arguments) {

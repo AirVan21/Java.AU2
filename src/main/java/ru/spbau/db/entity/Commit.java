@@ -15,17 +15,15 @@ import java.util.Map;
 public class Commit {
     @Id
     private ObjectId id;
-    public String message;
+    public String message = "";
     public Date date;
-    public String branchName;
-    public final Map<String, ObjectId> storageTable = new HashMap<>();
+    public String branchName = "";
+    public Map<String, ObjectId> storageTable = new HashMap<>();
 
     public Commit() {}
 
-    public Commit(String message, Date date, String branch) {
-        this.message = message;
-        this.date = date;
-        this.branchName = branch;
+    public Commit(Map<String, ObjectId> storageTable) {
+        this.storageTable = storageTable;
     }
 
     public ObjectId getId() {

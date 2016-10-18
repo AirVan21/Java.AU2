@@ -87,13 +87,14 @@ public class VCS {
         return sb.toString();
     }
 
-    public void makeCommit(String message) {
+        public void makeCommit(String message) {
         final Date currentDate = Calendar.getInstance().getTime();
         revision.message = message;
         revision.date = currentDate;
         revision.branchName = branch.getName();
-
         database.makeCommit(revision);
+
+        revision = new Commit(revision.storageTable);
     }
 
     public void makeAdd(List<String> files) {
@@ -146,8 +147,11 @@ public class VCS {
         }
 
         final Optional<Commit> nextBranchRevision = database.getLastCommittedRevision(nextBranch.get().getName());
+        if (!nextBranchRevision.isPresent()) {
+            return "Database error occurred!";
+        }
 
-        return "Switched to branch '" + branchName + "'\n";
+        return "Switched to branch '" + branchName + "'";
     }
 
     public void makeReset(List<String> arguments) {

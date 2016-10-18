@@ -25,7 +25,7 @@ public class FileManager {
     public static Set<String> listFiles(String path, boolean isRecursive) {
         return FileUtils.listFiles(new File(path), null, isRecursive)
                 .stream()
-                .map(File::getName)
+                .map(File::getPath)
                 .collect(Collectors.toSet());
     }
 

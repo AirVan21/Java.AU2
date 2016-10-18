@@ -5,9 +5,15 @@ import org.junit.Before;
 import org.junit.Test;
 import ru.spbau.db.DataBase;
 import ru.spbau.db.entity.Branch;
+import ru.spbau.db.entity.File;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 
@@ -16,18 +22,18 @@ import static org.junit.Assert.*;
  */
 public class VCSTest {
     private final static String TEST_DIR = "src/test/resources/";
+    private final static String TEST_FILE_MAIN ="src/test/resources/main.txt";
+    private final static String TEST_FILE_A = "src/test/resources/shared/a.txt";
     private final static String DB_NAME = "VSC_TEST";
     private final static VCS vcs = new VCS(Paths.get(TEST_DIR));
-    private DataBase database;
 
     @Before
     public void setUp() {
-        database = new DataBase(DB_NAME);
         vcs.makeInit();
     }
 
     @Test
-    public void makeInit() throws Exception {
+    public void testMakeInit() throws Exception {
         // init was already done
         final Branch branch = vcs.getBranch();
         assertTrue(branch.isActive());
@@ -35,16 +41,29 @@ public class VCSTest {
     }
 
     @Test
-    public void getStatus() throws Exception {
+    public void testGetStatus() {
     }
 
     @Test
-    public void getLog() throws Exception {
+    public void testGetLog() {
 
     }
 
     @Test
-    public void getBranches() throws Exception {
+    public void testGetBranches()  {
+
+    }
+
+    @Test
+    public void testMakeAdd()  {
+        vcs.makeAdd(Arrays.asList(TEST_FILE_MAIN, TEST_FILE_A));
+
+        assertTrue(vcs.getStatus().contains(TEST_FILE_A));
+        assertTrue(vcs.getStatus().contains(TEST_FILE_MAIN));
+    }
+
+    @Test
+    public void testMakeCommit()  {
 
     }
 
