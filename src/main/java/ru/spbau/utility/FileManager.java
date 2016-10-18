@@ -1,5 +1,6 @@
 package ru.spbau.utility;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -65,7 +66,32 @@ public class FileManager {
      * @param filePath file path
      */
     public static void deleteFile(String filePath) {
-        File file = new File(filePath);
+        final File file = new File(filePath);
         FileUtils.deleteQuietly(file);
+    }
+
+    /**
+     * Updates content of a file
+     * @param file - file from DB
+     */
+    public static void updateFile(ru.spbau.db.entity.File file) {
+        Optional<File> currentFile = getFile(file.getPath());
+        if (!currentFile.isPresent()) {
+            return;
+        }
+        Optional<String> currentText = readFile(currentFile.get());
+        final String hexInput = DigestUtils.md5Hex(file.getText());
+        final String hexCurrent = DigestUtils.md5Hex(currentText.get());
+        if (hexInput.equals(hexCurrent)) {
+            return;
+        }
+
+        deleteFile(file.getPath());
+        final File document = new File(file.getPath());
+        try {
+            FileUtils.write(document, file.getText(), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            GlobalLogger.log("Problems with creating file " + file.getPath());
+        }
     }
 }

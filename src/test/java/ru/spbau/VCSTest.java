@@ -23,20 +23,19 @@ public class VCSTest {
     @Before
     public void setUp() {
         database = new DataBase(DB_NAME);
+        vcs.makeInit();
     }
 
     @Test
     public void makeInit() throws Exception {
-        vcs.makeInit();
+        // init was already done
         final Branch branch = vcs.getBranch();
-
         assertTrue(branch.isActive());
         assertEquals("master", branch.getName());
     }
 
     @Test
     public void getStatus() throws Exception {
-
     }
 
     @Test

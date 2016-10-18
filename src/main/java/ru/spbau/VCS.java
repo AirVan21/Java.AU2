@@ -54,7 +54,7 @@ public class VCS {
     }
 
     public String getStatus() {
-        final Optional<Commit> lastCommittedRevision = database.getLastCommittedRevision();
+        final Optional<Commit> lastCommittedRevision = database.getLastCommittedRevision(branch.getName());
         final Commit previousRevision = lastCommittedRevision.isPresent()
                 ? lastCommittedRevision.get()
                 : new Commit();
@@ -129,7 +129,46 @@ public class VCS {
                 });
     }
 
-    public void makeCheckout(String branchName) {
-        
+    public String makeCheckout(String branchName) {
+        final Optional<Commit> lastCommittedRevision = database.getLastCommittedRevision(branch.getName());
+        final Commit previousRevision = lastCommittedRevision.isPresent()
+                ? lastCommittedRevision.get()
+                : new Commit();
+        final Set<String> addedFiles = StatusManager.getAddedFiles(revision, previousRevision);
+        final Set<String> deletedFiles = StatusManager.getDeletedFiles(revision, previousRevision);
+        final Set<String> modifiedFiles = StatusManager.getModifiedFiles(revision, previousRevision);
+        if (!deletedFiles.isEmpty() || !addedFiles.isEmpty() || !modifiedFiles.isEmpty()) {
+            return "Please, commit your changes before checkout!";
+        }
+        final Optional<Branch> nextBranch = database.getBranch(branchName);
+        if (!nextBranch.isPresent()) {
+            return "Specified branch \"" + branchName + "\" is not found!";
+        }
+
+        final Optional<Commit> nextBranchRevision = database.getLastCommittedRevision(nextBranch.get().getName());
+
+        return "Switched to branch '" + branchName + "'\n";
+    }
+
+    public void makeReset(List<String> arguments) {
+        for (final String fileName : arguments) {
+            if (revision.storageTable.containsKey(fileName)) {
+                Optional<Commit> previousRevision = database.getLastCommittedRevision(branch.getName());
+                if (previousRevision.isPresent()) {
+                    // Gets previous version of the file
+                    Set<File> committedFiles = new HashSet<>(database.getCommittedFiles(previousRevision.get()));
+                    Optional<File> resultFile = committedFiles
+                            .stream()
+                            .filter(item -> item.getPath().equals(fileName))
+                            .findAny();
+                    // Rewrites file
+                    if (resultFile.isPresent()) {
+                        FileManager.updateFile(resultFile.get());
+                    } else {
+                        FileManager.deleteFile(fileName);
+                    }
+                }
+            }
+        }
     }
 }

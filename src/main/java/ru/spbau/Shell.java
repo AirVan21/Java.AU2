@@ -59,6 +59,10 @@ public class Shell {
     }
     
     private void processCommand(Commands command, List<String> arguments) {
+        if (command != Commands.INIT && !vcs.isValid()) {
+
+        }
+
         switch (command) {
             case STATUS:
                 statusCommand();
@@ -98,15 +102,11 @@ public class Shell {
     }
 
     private void statusCommand() {
-        if (vcs.isValid()) {
-            System.out.println(vcs.getStatus());
-        }
+        System.out.println(vcs.getStatus());
     }
 
     private void logCommand() {
-        if (vcs.isValid()) {
-            System.out.println(vcs.getLog());
-        }
+        System.out.println(vcs.getLog());
     }
 
     /**
@@ -118,10 +118,6 @@ public class Shell {
      */
     private void branchCommand(List<String> arguments) {
         // TODO: Use Apache Commons for argument parsing
-        if (!vcs.isValid()) {
-            return;
-        }
-
         if (arguments.isEmpty()) {
             System.out.println(vcs.getBranches());
         }
@@ -133,9 +129,6 @@ public class Shell {
      * @param arguments
      */
     private void checkoutCommand(List<String> arguments) {
-        if (!vcs.isValid()) {
-            return;
-        }
 
     }
 
@@ -172,6 +165,10 @@ public class Shell {
     }
 
     private void resetCommand(List<String> arguments) {
+        if (arguments.isEmpty()) {
+            GlobalLogger.log("Wrong git add command format!");
+            return;
+        }
 
     }
 

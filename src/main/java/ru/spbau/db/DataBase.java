@@ -127,7 +127,7 @@ public class DataBase {
      * @param commit
      * @return
      */
-    public List<File> getCommitedFiles(Commit commit) {
+    public List<File> getCommittedFiles(Commit commit) {
         return datastore
                 .find(File.class)
                 .field("commit")
@@ -139,11 +139,11 @@ public class DataBase {
      * Gets last committed revison
      * @return
      */
-    public Optional<Commit> getLastCommittedRevision(Branch branch) {
+    public Optional<Commit> getLastCommittedRevision(String branchName) {
         List<Commit> revisions = datastore
                 .find(Commit.class)
                 .field("branch")
-                .equal(branch)
+                .equal(branchName)
                 .order("date")
                 .asList();
 
