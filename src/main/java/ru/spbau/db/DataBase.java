@@ -77,12 +77,14 @@ public class DataBase {
         return Optional.of(query.get(0));
     }
 
-    public List<Branch> getBranches() {
+    public Set<Branch> getBranches() {
         return datastore
                 .find(Branch.class)
                 .field("isClosed")
                 .equal(false)
-                .asList();
+                .asList()
+                .stream()
+                .collect(Collectors.toSet());
     }
 
     public void closeBranch(String name) {
@@ -104,6 +106,19 @@ public class DataBase {
         commit.branchName = branchName;
         final List<String> paths = new ArrayList<>(commit.storageTable.keySet());
         final List<ObjectId> ids = new ArrayList<>(commit.storageTable.values());
+        commit.mongoTable.clear();
+        for (int i = 0; i < paths.size(); ++i) {
+            commit.mongoTable.put(ids.get(i).toString(), paths.get(i));
+        }
+        // Save commit
+        datastore.save(commit);
+    }
+
+    public void saveCommit(Commit commit) {
+        // TODO: create a function
+        final List<String> paths = new ArrayList<>(commit.storageTable.keySet());
+        final List<ObjectId> ids = new ArrayList<>(commit.storageTable.values());
+        commit.mongoTable.clear();
         for (int i = 0; i < paths.size(); ++i) {
             commit.mongoTable.put(ids.get(i).toString(), paths.get(i));
         }
@@ -129,11 +144,19 @@ public class DataBase {
         return Optional.of(query.get(0));
     }
 
-    public List<Commit> getLog(Branch branch) {
+    public List<Commit> getCommits(String branchName) {
         return datastore
                 .find(Commit.class)
                 .field("branchName")
-                .equal(branch.getName())
+                .equal(branchName)
+                .asList();
+    }
+
+    public List<Commit> getLog(String branchName) {
+        return datastore
+                .find(Commit.class)
+                .field("branchName")
+                .equal(branchName)
                 .asList()
                 .stream()
                 .peek(Commit::updateStorageTable)

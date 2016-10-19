@@ -120,6 +120,10 @@ public class Shell {
         if (arguments.isEmpty()) {
             System.out.println(vcs.getBranches());
         }
+
+        if (arguments.size() == 1) {
+
+        }
     }
 
     /**

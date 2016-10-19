@@ -62,4 +62,14 @@ public class Commit {
         return id.equals(((Commit) other).id);
     }
 
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("Commit : ").append(id).append("\n");
+        sb.append("Date   : ").append(date).append("\n");
+        sb.append("Message: ").append(message).append("\n");
+
+        return sb.toString();
+    }
+
 }

@@ -7,6 +7,7 @@ import ru.spbau.db.entity.Branch;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.Assert.*;
 
@@ -82,7 +83,7 @@ public class DataBaseTest {
         database.createBranch(branchNameOne, false);
         database.createBranch(branchNameTwo, false);
 
-        final List<Branch> branches = database.getBranches();
+        final Set<Branch> branches = database.getBranches();
         assertEquals(2, branches.size());
     }
 

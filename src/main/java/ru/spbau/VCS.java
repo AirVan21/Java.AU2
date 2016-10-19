@@ -75,7 +75,7 @@ public class VCS {
     }
 
     public String getLog() {
-        List<Commit> commits = database.getLog(branch);
+        List<Commit> commits = database.getLog(branch.getName());
         final StringBuilder sb = new StringBuilder();
         commits.forEach(commit -> sb.append(commit).append("\n"));
 
@@ -83,7 +83,7 @@ public class VCS {
     }
 
     public String getBranches() {
-        List<Branch> branches = database.getBranches();
+        Set<Branch> branches = database.getBranches();
         final StringBuilder sb = new StringBuilder();
         branches.forEach(item -> sb.append(item.getName()).append("\n"));
 
@@ -178,5 +178,26 @@ public class VCS {
         if (branchName.equals(branch.getName())) {
             return;
         }
+    }
+
+    public void makeBranch(String branchName) {
+        final Set<Branch> existingBranches = database.getBranches();
+        final Set<String> branchNames = existingBranches
+                .stream()
+                .map(Branch::getName)
+                .collect(Collectors.toSet());
+        if (branchNames.contains(branchName)) {
+            return;
+        }
+
+        database.deactivateBranch();
+        final boolean isActive = true;
+        final List<Commit> branchCommits = database.getCommits(branch.getName());
+        branch = database.createBranch(branchName, isActive);
+        branchCommits
+                .forEach(item -> {
+                    item.branchName = branch.getName();
+                    database.saveCommit(item);
+                });
     }
 }
