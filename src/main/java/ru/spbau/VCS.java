@@ -38,6 +38,7 @@ public class VCS {
 
     public void dropVCSInfo() {
         database.dropDatabase();
+        revision = new Commit();
     }
 
     public boolean isValid() {
@@ -67,8 +68,8 @@ public class VCS {
 
         final StringBuilder sb = new StringBuilder();
         addedFiles.forEach(name -> sb.append("new file: ").append(name).append("\n"));
-        deletedFiles.forEach(name -> sb.append("modified: ").append(name).append("\n"));
-        modifiedFiles.forEach(name -> sb.append("deleted: ").append(name).append("\n"));
+        deletedFiles.forEach(name -> sb.append("deleted: ").append(name).append("\n"));
+        modifiedFiles.forEach(name -> sb.append("modified: ").append(name).append("\n"));
 
         return sb.toString();
     }

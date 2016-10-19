@@ -13,6 +13,7 @@ import ru.spbau.db.entity.File;
 
 import java.util.*;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  * DataBase class represents a MongoDB wrapper for VCS project
@@ -115,7 +116,10 @@ public class DataBase {
                 .find(Commit.class)
                 .field("id")
                 .equal(id)
-                .asList();
+                .asList()
+                .stream()
+                .peek(Commit::updateStorageTable)
+                .collect(Collectors.toList());
 
         if (query.isEmpty() || query.size() > 1) {
             logger.info("Couldn't find appropriate branch!");
@@ -130,7 +134,10 @@ public class DataBase {
                 .find(Commit.class)
                 .field("branchName")
                 .equal(branch.getName())
-                .asList();
+                .asList()
+                .stream()
+                .peek(Commit::updateStorageTable)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -157,9 +164,13 @@ public class DataBase {
                 .order("date")
                 .asList();
 
-        return revisions.isEmpty()
-                ? Optional.empty() // TODO: restore map
-                : Optional.of(revisions.get(revisions.size() - 1));
+        if (revisions.isEmpty()) {
+            return Optional.empty();
+        }
+        Commit result = revisions.get(revisions.size() - 1);
+        result.updateStorageTable();
+
+        return Optional.of(result);
     }
 
     public ObjectId addFile(File file) {

@@ -43,6 +43,16 @@ public class Commit {
         storageTable.remove(path);
     }
 
+    public void updateStorageTable() {
+        if (storageTable.isEmpty()) {
+            for (Map.Entry<String, Object> item : mongoTable.entrySet()) {
+                ObjectId value = new ObjectId(item.getKey());
+                String key = (String) item.getValue();
+                storageTable.put(key, value);
+            }
+        }
+    }
+
     @Override
     public boolean equals(Object other) {
         if (other == null || other.getClass() != getClass()) {
