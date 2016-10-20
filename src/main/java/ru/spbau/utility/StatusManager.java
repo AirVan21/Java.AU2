@@ -1,8 +1,13 @@
 package ru.spbau.utility;
 
+import org.bson.types.ObjectId;
+import ru.spbau.db.DataBase;
 import ru.spbau.db.entity.Commit;
+import ru.spbau.db.entity.File;
 
 import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -26,18 +31,28 @@ public class StatusManager {
                 .collect(Collectors.toSet());
     }
 
-    public static Set<String> getModifiedFiles(Commit current, Commit previous) {
-        final Set<String> result = new HashSet<>(current.storageTable.keySet());
-        result.retainAll(previous.storageTable.keySet());
+    public static Set<String> getModifiedFiles(Commit current, String dirPath, DataBase database) {
+        final Set<String> trackedFiles = new HashSet<>(current.storageTable.keySet());
+        final boolean isRecursive = true;
+        final Set<String> availableFiles = FileManager.listFiles(dirPath, isRecursive);
 
-        return result
+        return trackedFiles
                 .stream()
-                .filter(item -> !current
-                        .storageTable
-                        .get(item)
-                        .equals(previous
-                                .storageTable
-                                .get(item)))
+                .filter(availableFiles::contains)
+                .filter(item -> {
+                    ObjectId storedFileId = current.storageTable.get(item);
+                    List<File> file = database.getFile(storedFileId);
+                    // Skips bad cases
+                    if (file.isEmpty()) {
+                        return false;
+                    }
+                    Optional<String> currentText = FileManager.readFile(item);
+                    if (!currentText.isPresent()) {
+                        return false;
+                    }
+                    // Save filename if file was modified since last commit
+                    return !currentText.get().equals(file.get(0).getText());
+                })
                 .collect(Collectors.toSet());
     }
 }

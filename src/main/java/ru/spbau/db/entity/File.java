@@ -16,7 +16,7 @@ public class File {
     private ObjectId id;
     private String text;
     private String path;
-    private Commit commit = new Commit();
+    private ObjectId commitId;
 
     public File() {}
 
@@ -37,12 +37,12 @@ public class File {
         return path;
     }
 
-    public Commit getCommit() {
-        return commit;
+    public ObjectId getCommitId() {
+        return commitId;
     }
 
-    public void setCommit(Commit commit) {
-        this.commit = commit;
+    public void setCommitId(ObjectId commitId) {
+        this.commitId = commitId;
     }
 
     @Override

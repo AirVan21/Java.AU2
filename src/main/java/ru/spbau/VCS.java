@@ -14,7 +14,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- *
+ * VCS - is a class for which implements version control system logic
  */
 public class VCS {
     private final static String DATABASE_NAME = "VCS";
@@ -64,7 +64,7 @@ public class VCS {
 
         final Set<String> addedFiles = StatusManager.getAddedFiles(revision, previousRevision);
         final Set<String> deletedFiles = StatusManager.getDeletedFiles(revision, previousRevision);
-        final Set<String> modifiedFiles = StatusManager.getModifiedFiles(revision, previousRevision);
+        final Set<String> modifiedFiles = StatusManager.getModifiedFiles(revision, pathToWorkDir.toString(), database);
 
         final StringBuilder sb = new StringBuilder();
         addedFiles.forEach(name -> sb.append("new file: ").append(name).append("\n"));
@@ -98,7 +98,8 @@ public class VCS {
     public void makeAdd(List<String> files) {
         final boolean isRecursive = true;
         final Set<String> availableFiles = FileManager.listFiles(pathToWorkDir.toString(), isRecursive);
-        final List<File> addedFiles = files.stream()
+        final List<File> addedFiles = files
+                .stream()
                 .filter(availableFiles::contains)
                 .map(File::new)
                 .collect(Collectors.toList());
@@ -128,28 +129,29 @@ public class VCS {
                 });
     }
 
-    public String makeCheckout(String branchName) {
+    public void makeCheckout(String branchName) {
         final Optional<Commit> lastCommittedRevision = database.getLastCommittedRevision(branch.getName());
         final Commit previousRevision = lastCommittedRevision.isPresent()
                 ? lastCommittedRevision.get()
                 : new Commit();
         final Set<String> addedFiles = StatusManager.getAddedFiles(revision, previousRevision);
         final Set<String> deletedFiles = StatusManager.getDeletedFiles(revision, previousRevision);
-        final Set<String> modifiedFiles = StatusManager.getModifiedFiles(revision, previousRevision);
+        final Set<String> modifiedFiles = StatusManager.getModifiedFiles(revision, pathToWorkDir.toString(), database);
+
         if (!deletedFiles.isEmpty() || !addedFiles.isEmpty() || !modifiedFiles.isEmpty()) {
-            return "Please, commit your changes before checkout!";
+            GlobalLogger.log("Please, commit your changes before checkout!");
+            return;
         }
         final Optional<Branch> nextBranch = database.getBranch(branchName);
         if (!nextBranch.isPresent()) {
-            return "Specified branch \"" + branchName + "\" is not found!";
+            GlobalLogger.log("Specified branch \"" + branchName + "\" is not found!");
+            return;
         }
-
         final Optional<Commit> nextBranchRevision = database.getLastCommittedRevision(nextBranch.get().getName());
         if (!nextBranchRevision.isPresent()) {
-            return "Database error occurred!";
+            GlobalLogger.log("Database error occurred!");
+            return;
         }
-
-        return "Switched to branch '" + branchName + "'";
     }
 
     public void makeReset(List<String> arguments) {
@@ -181,15 +183,12 @@ public class VCS {
     }
 
     public void makeBranch(String branchName) {
-        final Set<Branch> existingBranches = database.getBranches();
-        final Set<String> branchNames = existingBranches
-                .stream()
-                .map(Branch::getName)
-                .collect(Collectors.toSet());
+        final Set<String> branchNames = getBranchNames();
         if (branchNames.contains(branchName)) {
+            GlobalLogger.log("Branch with name '" + branchName + "' already exists!");
             return;
         }
-
+        // Switch branches
         database.deactivateBranch();
         final boolean isActive = true;
         final List<Commit> branchCommits = database.getCommits(branch.getName());
@@ -199,5 +198,25 @@ public class VCS {
                     item.branchName = branch.getName();
                     database.saveCommit(item);
                 });
+    }
+
+    public void deleteBranch(String branchName) {
+        if (branch.getName().equals(branchName)) {
+            GlobalLogger.log("Please, switch to another branch to delete this branch!");
+            return;
+        }
+        final Set<String> branchNames = getBranchNames();
+        if (!branchName.contains(branchName)) {
+            GlobalLogger.log("Branch with name '" + branchName + "' is not found!");
+        }
+        database.closeBranch(branchName);
+    }
+
+    private Set<String> getBranchNames() {
+        return database
+                .getBranches()
+                .stream()
+                .map(Branch::getName)
+                .collect(Collectors.toSet());
     }
 }

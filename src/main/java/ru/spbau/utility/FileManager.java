@@ -37,12 +37,12 @@ public class FileManager {
     public static Optional<File> getFile(String filePath) {
         File file;
         try {
-            file = FileUtils.getFile(filePath);
+            file = new File(filePath);
         } catch (NullPointerException exc) {
             return Optional.empty();
         }
 
-        return Optional.of(file);
+        return file.exists() ? Optional.of(file) : Optional.empty();
     }
 
     /**
@@ -61,6 +61,11 @@ public class FileManager {
         return Optional.of(result);
     }
 
+    public static Optional<String> readFile(String path) {
+        Optional<File> file = getFile(path);
+        return file.isPresent() ? readFile(file.get()) : Optional.empty();
+    }
+
     /**
      * Deletes file quietly
      * @param filePath file path
@@ -75,11 +80,7 @@ public class FileManager {
      * @param file - file from DB
      */
     public static void updateFile(ru.spbau.db.entity.File file) {
-        Optional<File> currentFile = getFile(file.getPath());
-        if (!currentFile.isPresent()) {
-            return;
-        }
-        Optional<String> currentText = readFile(currentFile.get());
+        Optional<String> currentText = readFile(file.getPath());
         final String hexInput = DigestUtils.md5Hex(file.getText());
         final String hexCurrent = DigestUtils.md5Hex(currentText.get());
         if (hexInput.equals(hexCurrent)) {

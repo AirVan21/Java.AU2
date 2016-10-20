@@ -1,10 +1,8 @@
 package ru.spbau.db;
 
-import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClient;
 import org.bson.types.ObjectId;
 import org.mongodb.morphia.Datastore;
-import org.mongodb.morphia.Key;
 import org.mongodb.morphia.Morphia;
 import org.mongodb.morphia.query.UpdateOperations;
 import ru.spbau.db.entity.Branch;
@@ -104,24 +102,14 @@ public class DataBase {
         commit.message = message;
         commit.date = currentDate;
         commit.branchName = branchName;
-        final List<String> paths = new ArrayList<>(commit.storageTable.keySet());
-        final List<ObjectId> ids = new ArrayList<>(commit.storageTable.values());
-        commit.mongoTable.clear();
-        for (int i = 0; i < paths.size(); ++i) {
-            commit.mongoTable.put(ids.get(i).toString(), paths.get(i));
-        }
+        restoreDataToMongoHash(commit);
         // Save commit
         datastore.save(commit);
+        updateInfoInFiles(commit);
     }
 
     public void saveCommit(Commit commit) {
-        // TODO: create a function
-        final List<String> paths = new ArrayList<>(commit.storageTable.keySet());
-        final List<ObjectId> ids = new ArrayList<>(commit.storageTable.values());
-        commit.mongoTable.clear();
-        for (int i = 0; i < paths.size(); ++i) {
-            commit.mongoTable.put(ids.get(i).toString(), paths.get(i));
-        }
+        restoreDataToMongoHash(commit);
         // Save commit
         datastore.save(commit);
     }
@@ -163,21 +151,18 @@ public class DataBase {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * @param commit
-     * @return
-     */
     public List<File> getCommittedFiles(Commit commit) {
         return datastore
                 .find(File.class)
-                .field("commit")
-                .equal(commit)
+                .field("commitId")
+                .equal(commit.getId())
                 .asList();
     }
 
     /**
-     * Gets last committed revison
-     * @return
+     * Gets last committed revision
+     *
+     * @return Optional of last committed revision if such revision exists
      */
     public Optional<Commit> getLastCommittedRevision(String branchName) {
         List<Commit> revisions = datastore
@@ -200,13 +185,39 @@ public class DataBase {
         return (ObjectId) datastore.save(file).getId();
     }
 
-    public List<File> getFiles() {
+    public List<File> getFile(ObjectId id) {
         return datastore
                 .find(File.class)
+                .field("id")
+                .equal(id)
                 .asList();
     }
 
     public void dropDatabase() {
         datastore.getDB().dropDatabase();
+    }
+
+    private void restoreDataToMongoHash(Commit commit) {
+        final List<String> paths = new ArrayList<>(commit.storageTable.keySet());
+        final List<ObjectId> ids = new ArrayList<>(commit.storageTable.values());
+        commit.mongoTable.clear();
+        for (int i = 0; i < paths.size(); ++i) {
+            commit.mongoTable.put(ids.get(i).toString(), paths.get(i));
+        }
+    }
+
+    private void updateInfoInFiles(Commit commit) {
+        final UpdateOperations<File> update = datastore
+                .createUpdateOperations(File.class)
+                .set("commitId", commit.getId());
+        commit
+                .storageTable
+                .values()
+                .forEach(fileId -> {
+                    List<File> file = getFile(fileId);
+                    if (!file.isEmpty()) {
+                        datastore.update(file.get(0), update);
+                    }
+                });
     }
 }
