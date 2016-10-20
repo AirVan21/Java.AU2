@@ -152,6 +152,8 @@ public class VCS {
             GlobalLogger.log("Database error occurred!");
             return;
         }
+
+        applyFileUpdates(nextBranchRevision.get().storageTable);
     }
 
     public void makeReset(List<String> arguments) {
@@ -178,6 +180,7 @@ public class VCS {
 
     public void makeMerge(String branchName) {
         if (branchName.equals(branch.getName())) {
+            GlobalLogger.log("Couldn't merge with the same branch!");
             return;
         }
     }
@@ -195,8 +198,11 @@ public class VCS {
         branch = database.createBranch(branchName, isActive);
         branchCommits
                 .forEach(item -> {
-                    item.branchName = branch.getName();
-                    database.saveCommit(item);
+                    Commit commit = new Commit(item.storageTable);
+                    commit.branchName = branch.getName();
+                    commit.date = item.date;
+                    commit.message = item.message;
+                    database.saveCommit(commit);
                 });
     }
 
@@ -218,5 +224,16 @@ public class VCS {
                 .stream()
                 .map(Branch::getName)
                 .collect(Collectors.toSet());
+    }
+
+    private void applyFileUpdates(Map<String, ObjectId> filesMap) {
+        filesMap
+                .entrySet()
+                .forEach(pair -> {
+                    List<File> file = database.getFile(pair.getValue());
+                    if (!file.isEmpty()) {
+                        FileManager.updateFile(file.get(0));
+                    }
+                });
     }
 }

@@ -8,14 +8,23 @@ import ru.spbau.utility.FileManager;
 import java.util.Optional;
 
 /**
- *
+ * File class represents simple text file in VCS logic
  */
 @Entity("File")
 public class File {
     @Id
     private ObjectId id;
+    /**
+     * Content of the file
+     */
     private String text;
+    /**
+     * Path to the file from working dir
+     */
     private String path;
+    /**
+     * Id of commit which is associated with file
+     */
     private ObjectId commitId;
 
     public File() {}

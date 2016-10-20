@@ -5,14 +5,23 @@ import org.mongodb.morphia.annotations.Entity;
 import org.mongodb.morphia.annotations.Id;
 
 /**
- *
+ * Branch class represents branch in VCS logic
  */
 @Entity("Branch")
 public class Branch {
     @Id
     private ObjectId id;
+    /**
+     * Branch name
+     */
     private String name = "";
+    /**
+     * Shows is branch is active at the moment
+     */
     private boolean isActive = false;
+    /**
+     * Shows is branch is closed or not
+     */
     private boolean isClosed = false;
 
     public Branch() {}

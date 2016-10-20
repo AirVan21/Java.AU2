@@ -210,8 +210,7 @@ public class DataBase {
         final UpdateOperations<File> update = datastore
                 .createUpdateOperations(File.class)
                 .set("commitId", commit.getId());
-        commit
-                .storageTable
+        commit.storageTable
                 .values()
                 .forEach(fileId -> {
                     List<File> file = getFile(fileId);

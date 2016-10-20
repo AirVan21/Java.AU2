@@ -61,6 +61,11 @@ public class FileManager {
         return Optional.of(result);
     }
 
+    /**
+     * Reads file in string if file exists
+     * @param path path to file
+     * @return Optional with file text if file exist, Optional empty elsewhere
+     */
     public static Optional<String> readFile(String path) {
         Optional<File> file = getFile(path);
         return file.isPresent() ? readFile(file.get()) : Optional.empty();

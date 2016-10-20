@@ -1,5 +1,6 @@
 package ru.spbau;
 
+import com.sun.org.apache.xerces.internal.impl.dv.dtd.StringDatatypeValidator;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -196,6 +197,42 @@ public class VCSTest {
         assertEquals(TEST_FILE_MAIN_TEXT, fileText.get());
     }
 
+    @Test
+    public void testMakeBranch() {
+        vcs.makeAdd(Arrays.asList(TEST_FILE_MAIN));
+        vcs.makeCommit("Added main file!");
+
+        final String branchName = "other";
+        vcs.makeBranch(branchName);
+
+        final String branchNames = vcs.getBranches();
+        assertTrue(branchNames.contains(branchName));
+
+        final String branchLog = vcs.getLog();
+        assertTrue(branchLog.contains("Added main file!"));
+    }
+
+    @Test
+    public void testMakeCheckout() {
+        vcs.makeAdd(Arrays.asList(TEST_FILE_MAIN));
+        vcs.makeCommit("Added main file!");
+
+        final String branchName = "other";
+        vcs.makeBranch(branchName);
+
+        // change main.txt in a branch
+        editMainFile();
+        final Optional<String> changedText = FileManager.readFile(TEST_FILE_MAIN);
+        vcs.makeAdd(Arrays.asList(TEST_FILE_MAIN));
+        vcs.makeCommit("Changed main.txt");
+        assertNotEquals(TEST_FILE_MAIN_TEXT, changedText.get());
+
+        vcs.makeCheckout("master");
+        final Optional<String> sourceText = FileManager.readFile(TEST_FILE_MAIN);
+        assertNotEquals(changedText.get(), sourceText.get());
+        assertEquals(TEST_FILE_MAIN_TEXT, sourceText.get());
+    }
+
     private final void recoverMainFile() {
         java.io.File mainFile = new java.io.File(TEST_FILE_MAIN);
         try {
@@ -217,7 +254,7 @@ public class VCSTest {
     private final void editMainFile() {
         java.io.File mainFile = new java.io.File(TEST_FILE_MAIN);
         try {
-            FileUtils.write(mainFile, TEST_FILE_A, StandardCharsets.UTF_8);
+            FileUtils.write(mainFile, TEST_FILE_A_TEXT, StandardCharsets.UTF_8);
         } catch (IOException e) {
             GlobalLogger.log("Couldn't create file " + TEST_FILE_MAIN);
         }
