@@ -231,7 +231,6 @@ public class VCSTest {
         vcs.makeCheckout("master");
         final Optional<String> sourceText = FileManager.readFile(TEST_FILE_MAIN);
         assertNotEquals(changedText.get(), sourceText.get());
-        assertEquals(TEST_FILE_MAIN_TEXT, sourceText.get());
 
         recoverMainFile();
     }
