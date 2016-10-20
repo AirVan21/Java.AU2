@@ -12,9 +12,15 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- *
+ * Status manager collects information of files state in the repo
  */
 public class StatusManager {
+    /**
+     * Gets files which we added between two commits
+     * @param current ccommit which describes last committed state
+     * @param previous commit which describes previous committed state
+     * @return Set of paths of added files
+     */
     public static Set<String> getAddedFiles(Commit current, Commit previous) {
         return current.storageTable
                 .keySet()
@@ -23,6 +29,12 @@ public class StatusManager {
                 .collect(Collectors.toSet());
     }
 
+    /**
+     * Gets files which we deleted between two commits
+     * @param current commit which describes last committed state
+     * @param previous commit which describes previous committed state
+     * @return Set of paths of deleted files
+     */
     public static Set<String> getDeletedFiles(Commit current, Commit previous) {
         return previous.storageTable
                 .keySet()
@@ -31,6 +43,13 @@ public class StatusManager {
                 .collect(Collectors.toSet());
     }
 
+    /**
+     * Gets files which we modified since last
+     * @param current commit which describes last committed state
+     * @param dirPath path to working dir
+     * @param database database object for collecting info
+     * @return Set of paths of modified files
+     */
     public static Set<String> getModifiedFiles(Commit current, String dirPath, DataBase database) {
         final Set<String> trackedFiles = new HashSet<>(current.storageTable.keySet());
         final boolean isRecursive = true;

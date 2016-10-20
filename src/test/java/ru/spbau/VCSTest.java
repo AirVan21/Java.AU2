@@ -1,6 +1,5 @@
 package ru.spbau;
 
-import com.sun.org.apache.xerces.internal.impl.dv.dtd.StringDatatypeValidator;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -35,8 +34,8 @@ public class VCSTest {
     /**
      * Content of available files
      */
-    private final static String TEST_FILE_MAIN_TEXT = "hello world";
-    private final static String TEST_FILE_A_TEXT = "class a";
+    private final static String TEST_FILE_MAIN_TEXT = "hello world\n";
+    private final static String TEST_FILE_A_TEXT = "class a\n";
     /**
      * Main testing object
      */
@@ -195,6 +194,8 @@ public class VCSTest {
         Optional<String> fileText = FileManager.readFile(TEST_FILE_MAIN);
         assertTrue(fileText.isPresent());
         assertEquals(TEST_FILE_MAIN_TEXT, fileText.get());
+
+        recoverMainFile();
     }
 
     @Test
@@ -231,6 +232,50 @@ public class VCSTest {
         final Optional<String> sourceText = FileManager.readFile(TEST_FILE_MAIN);
         assertNotEquals(changedText.get(), sourceText.get());
         assertEquals(TEST_FILE_MAIN_TEXT, sourceText.get());
+
+        recoverMainFile();
+    }
+
+    @Test
+    public void testDeleteBranch() {
+        vcs.makeAdd(Arrays.asList(TEST_FILE_MAIN));
+        vcs.makeCommit("Added main file!");
+
+        final String branchName = "other";
+        vcs.makeBranch(branchName);
+        vcs.makeCheckout("master");
+
+        String listOfBranches = vcs.getBranches();
+        assertTrue(listOfBranches.contains("master"));
+        assertTrue(listOfBranches.contains("other"));
+
+        vcs.deleteBranch(branchName);
+        listOfBranches = vcs.getBranches();
+        assertTrue(listOfBranches.contains("master"));
+        assertFalse(listOfBranches.contains("other"));
+    }
+
+    @Test
+    public void testMakeMerge() {
+        vcs.makeAdd(Arrays.asList(TEST_FILE_MAIN));
+        vcs.makeCommit("Added main file!");
+
+        final String branchName = "other";
+        vcs.makeBranch(branchName);
+
+        // Make changes
+        vcs.makeAdd(Arrays.asList(TEST_FILE_A));
+        editMainFile();
+        vcs.makeAdd(Arrays.asList(TEST_FILE_MAIN));
+        vcs.makeCommit("Added file a.txt and changed main.txt");
+
+        vcs.makeCheckout("master");
+        vcs.makeMerge("other");
+
+        String log = vcs.getLog();
+        assertTrue(log.contains("Merge"));
+
+        recoverMainFile();
     }
 
     private final void recoverMainFile() {

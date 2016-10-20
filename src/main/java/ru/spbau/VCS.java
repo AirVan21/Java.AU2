@@ -147,6 +147,8 @@ public class VCS {
             GlobalLogger.log("Specified branch \"" + branchName + "\" is not found!");
             return;
         }
+        branch = nextBranch.get();
+
         final Optional<Commit> nextBranchRevision = database.getLastCommittedRevision(nextBranch.get().getName());
         if (!nextBranchRevision.isPresent()) {
             GlobalLogger.log("Database error occurred!");
@@ -178,11 +180,30 @@ public class VCS {
         }
     }
 
+    /**
+     * Merge is done like a checkout to current branch
+     * We updates files using source from branch with name which was specified
+     *
+     * @param branchName
+     */
     public void makeMerge(String branchName) {
         if (branchName.equals(branch.getName())) {
             GlobalLogger.log("Couldn't merge with the same branch!");
             return;
         }
+        final Optional<Branch> nextBranch = database.getBranch(branchName);
+        if (!nextBranch.isPresent()) {
+            GlobalLogger.log("Specified branch \"" + branchName + "\" is not found!");
+            return;
+        }
+        final Optional<Commit> nextBranchRevision = database.getLastCommittedRevision(nextBranch.get().getName());
+        if (!nextBranchRevision.isPresent()) {
+            GlobalLogger.log("Database error occurred!");
+            return;
+        }
+
+        applyFileUpdates(nextBranchRevision.get().storageTable);
+        makeCommit("Merged branch '" + branchName + "'");
     }
 
     public void makeBranch(String branchName) {
@@ -212,10 +233,11 @@ public class VCS {
             return;
         }
         final Set<String> branchNames = getBranchNames();
-        if (!branchName.contains(branchName)) {
+        if (!branchNames.contains(branchName)) {
             GlobalLogger.log("Branch with name '" + branchName + "' is not found!");
         }
         database.closeBranch(branchName);
+
     }
 
     private Set<String> getBranchNames() {

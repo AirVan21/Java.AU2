@@ -48,7 +48,11 @@ public class Shell {
     public Shell(Path path) {
         vcs = new VCS(path);
     }
-    
+
+    /**
+     * Executes command parsing input values
+     * @param input list of word which may be commands
+     */
     public void execute(List<String> input) {
         if (input.size() < MINIMAL_INPUT_SIZE) {
             GlobalLogger.log("Please, input: 'git COMMAND_NAME [ARGS]'");

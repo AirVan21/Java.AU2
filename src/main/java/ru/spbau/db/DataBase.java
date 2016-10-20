@@ -8,9 +8,9 @@ import org.mongodb.morphia.query.UpdateOperations;
 import ru.spbau.db.entity.Branch;
 import ru.spbau.db.entity.Commit;
 import ru.spbau.db.entity.File;
+import ru.spbau.utility.GlobalLogger;
 
 import java.util.*;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
@@ -18,7 +18,6 @@ import java.util.stream.Collectors;
  */
 public class DataBase {
     private final Datastore datastore;
-    private final Logger logger = Logger.getLogger(DataBase.class.getName());
 
     public DataBase(String name) {
         final MongoClient mongo = new MongoClient();
@@ -40,7 +39,7 @@ public class DataBase {
                 .asList();
 
         if (query.isEmpty() || query.size() > 1) {
-            logger.info("Couldn't find active branch!");
+            GlobalLogger.log("Couldn't find active branch!");
             return Optional.empty();
         }
 
@@ -65,10 +64,12 @@ public class DataBase {
                 .find(Branch.class)
                 .field("name")
                 .equal(name)
+                .field("isClosed")
+                .equal(false)
                 .asList();
 
         if (query.isEmpty() || query.size() > 1) {
-            logger.info("Couldn't find appropriate branch!");
+            GlobalLogger.log("Couldn't find appropriate branch!");
             return Optional.empty();
         }
 
@@ -125,7 +126,7 @@ public class DataBase {
                 .collect(Collectors.toList());
 
         if (query.isEmpty() || query.size() > 1) {
-            logger.info("Couldn't find appropriate branch!");
+            GlobalLogger.log("Couldn't find appropriate branch!");
             return Optional.empty();
         }
 
@@ -137,7 +138,10 @@ public class DataBase {
                 .find(Commit.class)
                 .field("branchName")
                 .equal(branchName)
-                .asList();
+                .asList()
+                .stream()
+                .peek(Commit::updateStorageTable)
+                .collect(Collectors.toList());
     }
 
     public List<Commit> getLog(String branchName) {
