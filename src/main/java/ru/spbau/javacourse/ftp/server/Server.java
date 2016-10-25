@@ -42,6 +42,7 @@ public class Server {
             try {
                 Socket connection = socket.get().accept();
                 HandleTask task = new HandleTask(connection);
+                task.Initialize();
                 new Thread(task).start();
             } catch (IOException e) {
                 GlobalLogger.log(e.getMessage());

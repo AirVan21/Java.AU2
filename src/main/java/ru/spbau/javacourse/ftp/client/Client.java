@@ -1,12 +1,16 @@
 package ru.spbau.javacourse.ftp.client;
 
 import ru.spbau.javacourse.ftp.commands.Request;
+import ru.spbau.javacourse.ftp.commands.RequestManager;
+import ru.spbau.javacourse.ftp.utils.FolderEntity;
 import ru.spbau.javacourse.ftp.utils.GlobalLogger;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.List;
 import java.util.Optional;
 
 public class Client {
@@ -41,15 +45,19 @@ public class Client {
         socket = Optional.empty();
     }
 
-    public synchronized void executeListRequest(String targetPath) throws IOException {
+    public synchronized List<FolderEntity> executeListRequest(String targetPath) throws IOException {
         output.writeInt(Request.GET_LIST_REQUEST);
         output.writeUTF(targetPath);
         output.flush();
+
+        return RequestManager.getListResponse(input);
     }
 
-    public synchronized void executeGetRequest(String pathToFile) throws IOException {
+    public synchronized void executeGetRequest(String pathToFile, File outputFile) throws IOException {
         output.writeInt(Request.GET_FILE_REQUEST);
         output.writeUTF(pathToFile);
         output.flush();
+
+        RequestManager.getFileResponse(input, outputFile);
     }
 }
