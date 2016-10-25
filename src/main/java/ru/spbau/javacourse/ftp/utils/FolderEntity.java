@@ -1,5 +1,8 @@
 package ru.spbau.javacourse.ftp.utils;
 
+/**
+ * FolderEntity class - represents an entity which could be a File or a Directory
+ */
 public class FolderEntity {
     private final String name;
     private final boolean isFolder;

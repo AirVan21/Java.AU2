@@ -7,12 +7,20 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Optional;
 
+/**
+ * Server class - class which handles Client requests and resolves connections
+ */
 public class Server {
     private Optional<ServerSocket> socket;
     private volatile boolean isStopped;
 
     public Server() {}
 
+    /**
+     * Starts server
+     * @param port - port for server socket
+     * @throws IOException
+     */
     public synchronized void start(int port) throws IOException {
         if (socket.isPresent()) {
             GlobalLogger.log("Server is already up!");
@@ -24,6 +32,11 @@ public class Server {
         new Thread(this::handle).start();
     }
 
+    /**
+     * Stops server
+     * @throws IOException
+     * @throws InterruptedException
+     */
     public synchronized void stop() throws IOException, InterruptedException {
         if (!socket.isPresent()) {
             GlobalLogger.log("Couldn't stop empty socket!");
@@ -36,7 +49,9 @@ public class Server {
         wait();
     }
 
-
+    /**
+     * Listens connections
+     */
     public void handle() {
         while (!isStopped) {
             try {

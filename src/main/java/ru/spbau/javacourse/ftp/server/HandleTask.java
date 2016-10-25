@@ -10,6 +10,9 @@ import java.net.Socket;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * HandleTask is a class which handles Client request (and executes it)
+ */
 public class HandleTask implements Runnable {
     private final Socket taskSocket;
     private DataInputStream input;
@@ -24,6 +27,9 @@ public class HandleTask implements Runnable {
         output = new DataOutputStream(taskSocket.getOutputStream());
     }
 
+    /**
+     * Parses and executes client request
+     */
     @Override
     public void run() {
         try {
@@ -43,6 +49,11 @@ public class HandleTask implements Runnable {
         }
     }
 
+    /**
+     * Chooses between LIST and GET requests and executes
+     * @param requestId id of request
+     * @throws IOException
+     */
     private void executeRequest(int requestId) throws IOException {
         switch (requestId) {
             case Request.GET_LIST_REQUEST:
@@ -56,6 +67,10 @@ public class HandleTask implements Runnable {
         }
     }
 
+    /**
+     * Writes "ls" info about selected directory to output stream
+     * @throws IOException
+     */
     private void handleGetListRequest() throws IOException {
         final String path = input.readUTF();
         final Set<File> fileNames = FileUtils.listFilesAndDirs(new File(path), null, null)
@@ -70,6 +85,10 @@ public class HandleTask implements Runnable {
         output.flush();
     }
 
+    /**
+     * Writes selected file to output stream
+     * @throws IOException
+     */
     private void handleGetFileRequest() throws IOException {
         String path = input.readUTF();
         final File file = new File(path);

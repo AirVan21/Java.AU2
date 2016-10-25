@@ -1,6 +1,5 @@
 package ru.spbau.javacourse.ftp.utils;
 
-
 import java.util.logging.Logger;
 
 /**
