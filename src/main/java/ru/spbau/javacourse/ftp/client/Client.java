@@ -24,7 +24,7 @@ public class Client {
     private final int port;
     private DataInputStream input;
     private DataOutputStream output;
-    private Optional<Socket> socket;
+    private Optional<Socket> socket = Optional.empty();
 
     public Client(String hostName, int port) {
         this.hostName = hostName;

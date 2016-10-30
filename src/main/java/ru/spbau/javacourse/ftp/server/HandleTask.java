@@ -39,12 +39,12 @@ public class HandleTask implements Runnable {
             }
         }
         catch (IOException e) {
-            GlobalLogger.log(e.getMessage());
+            GlobalLogger.log(getClass().getName() + " " + e.getMessage());
         } finally {
             try {
                 taskSocket.close();
             } catch (IOException e) {
-                GlobalLogger.log(e.getMessage());
+                GlobalLogger.log(getClass().getName() + " " + e.getMessage());
             }
         }
     }
@@ -63,7 +63,7 @@ public class HandleTask implements Runnable {
                 handleGetFileRequest();
                 break;
             default:
-                GlobalLogger.log("Invalid command!");
+                GlobalLogger.log(getClass().getName() + "Invalid command!");
         }
     }
 
@@ -73,7 +73,7 @@ public class HandleTask implements Runnable {
      */
     private void handleGetListRequest() throws IOException {
         final String path = input.readUTF();
-        final Set<File> fileNames = FileUtils.listFilesAndDirs(new File(path), null, null)
+        final Set<File> fileNames = FileUtils.listFiles(new File(path), null, false)
                 .stream()
                 .collect(Collectors.toSet());
 

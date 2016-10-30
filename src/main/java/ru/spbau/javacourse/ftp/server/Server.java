@@ -11,7 +11,7 @@ import java.util.Optional;
  * Server class - class which handles Client requests and resolves connections
  */
 public class Server {
-    private Optional<ServerSocket> socket;
+    private Optional<ServerSocket> socket = Optional.empty();
     private volatile boolean isStopped;
 
     public Server() {}
@@ -23,7 +23,7 @@ public class Server {
      */
     public synchronized void start(int port) throws IOException {
         if (socket.isPresent()) {
-            GlobalLogger.log("Server is already up!");
+            GlobalLogger.log(getClass().getName() + "Server is already up!");
             return;
         }
 
@@ -39,7 +39,7 @@ public class Server {
      */
     public synchronized void stop() throws IOException, InterruptedException {
         if (!socket.isPresent()) {
-            GlobalLogger.log("Couldn't stop empty socket!");
+            GlobalLogger.log(getClass().getName() + " " + "Couldn't stop empty socket!");
             return;
         }
 
@@ -60,7 +60,7 @@ public class Server {
                 task.Initialize();
                 new Thread(task).start();
             } catch (IOException e) {
-                GlobalLogger.log(e.getMessage());
+                GlobalLogger.log(getClass().getName() + " " + e.getMessage());
             }
 
             synchronized (this) {
