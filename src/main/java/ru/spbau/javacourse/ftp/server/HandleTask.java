@@ -1,6 +1,5 @@
 package ru.spbau.javacourse.ftp.server;
 
-import org.apache.commons.io.FileUtils;
 import ru.spbau.javacourse.ftp.commands.Request;
 import ru.spbau.javacourse.ftp.utils.FileManager;
 import ru.spbau.javacourse.ftp.utils.GlobalLogger;
@@ -9,8 +8,6 @@ import java.io.*;
 import java.net.Socket;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * HandleTask is a class which handles Client request (and executes it)
