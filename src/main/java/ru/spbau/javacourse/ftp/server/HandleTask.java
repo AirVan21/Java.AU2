@@ -7,6 +7,8 @@ import ru.spbau.javacourse.ftp.utils.GlobalLogger;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -39,7 +41,7 @@ public class HandleTask implements Runnable {
             }
         }
         catch (IOException e) {
-            GlobalLogger.log(getClass().getName() + " " + e.getMessage());
+            // already closed exception
         } finally {
             try {
                 taskSocket.close();
@@ -73,12 +75,15 @@ public class HandleTask implements Runnable {
      */
     private void handleGetListRequest() throws IOException {
         final String path = input.readUTF();
-        final Set<File> fileNames = FileUtils.listFiles(new File(path), null, false)
-                .stream()
-                .collect(Collectors.toSet());
-
-        output.writeInt(fileNames.size());
-        for (File file : fileNames) {
+        final File filePath = new File(path);
+        if (!filePath.exists()) {
+            output.writeInt(0);
+            output.flush();
+            return;
+        }
+        final List<File> files = Arrays.asList(filePath.listFiles());
+        output.writeInt(files.size());
+        for (File file : files) {
             output.writeUTF(file.getName());
             output.writeBoolean(file.isDirectory());
         }

@@ -60,7 +60,7 @@ public class Server {
                 task.Initialize();
                 new Thread(task).start();
             } catch (IOException e) {
-                GlobalLogger.log(getClass().getName() + " " + e.getMessage());
+                // already closed exception
             }
 
             synchronized (this) {
