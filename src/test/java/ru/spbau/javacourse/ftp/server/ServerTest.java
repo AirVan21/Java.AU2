@@ -1,6 +1,7 @@
 package ru.spbau.javacourse.ftp.server;
 
 import org.junit.Test;
+import org.mockito.Mockito;
 import ru.spbau.javacourse.ftp.client.Client;
 
 import static org.mockito.Mockito.*;
@@ -13,7 +14,7 @@ public class ServerTest {
 
     @Test
     public void handle() throws Exception {
-        Server mockedServer = mock(Server.class);
+        Server mockedServer = Mockito.spy(Server.class);
         mockedServer.start(PORT);
 
         final Client client = new Client("localhost", PORT);
