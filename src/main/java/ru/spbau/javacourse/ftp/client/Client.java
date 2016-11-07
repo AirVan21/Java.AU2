@@ -10,6 +10,7 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,13 +38,14 @@ public class Client {
      */
     public synchronized void connect() throws IOException {
         if (socket.isPresent()) {
-            GlobalLogger.log("Can't reconnect!");
+            GlobalLogger.log(getClass().getName(), "Can't reconnect!");
             return;
         }
 
-        socket = Optional.of(new Socket(hostName, port));
-        input = new DataInputStream(socket.get().getInputStream());
-        output = new DataOutputStream(socket.get().getOutputStream());
+        final Socket clientSocket = new Socket(hostName, port);
+        socket = Optional.of(clientSocket);
+        input = new DataInputStream(clientSocket.getInputStream());
+        output = new DataOutputStream(clientSocket.getOutputStream());
     }
 
     /**
@@ -52,7 +54,8 @@ public class Client {
      */
     public synchronized void disconnect() throws IOException {
         if (!socket.isPresent()) {
-            GlobalLogger.log("Connection is not found!");
+            GlobalLogger.log(getClass().getName(), "Connection is not found!");
+            return;
         }
 
         socket.get().close();

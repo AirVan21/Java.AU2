@@ -17,11 +17,8 @@ public class HandleTask implements Runnable {
     private DataInputStream input;
     private DataOutputStream output;
 
-    public HandleTask(Socket connection) {
+    public HandleTask(Socket connection) throws IOException {
         taskSocket = connection;
-    }
-
-    public void Initialize() throws IOException {
         input = new DataInputStream(taskSocket.getInputStream());
         output = new DataOutputStream(taskSocket.getOutputStream());
     }
@@ -32,18 +29,18 @@ public class HandleTask implements Runnable {
     @Override
     public void run() {
         try {
-            while (!taskSocket.isClosed() && taskSocket.isConnected()) {
+            while (!taskSocket.isClosed()) {
                 final int requestId = input.readInt();
                 executeRequest(requestId);
             }
         }
         catch (IOException e) {
-            // already closed exception
+            GlobalLogger.log(HandleTask.class.getName(), e.getMessage());
         } finally {
             try {
                 taskSocket.close();
             } catch (IOException e) {
-                GlobalLogger.log(getClass().getName() + " " + e.getMessage());
+                GlobalLogger.log(getClass().getName(), e.getMessage());
             }
         }
     }
@@ -62,7 +59,8 @@ public class HandleTask implements Runnable {
                 handleGetFileRequest();
                 break;
             default:
-                GlobalLogger.log(getClass().getName() + "Invalid command!");
+                GlobalLogger.log(getClass().getName(), "Invalid command!");
+                taskSocket.close();
         }
     }
 
@@ -78,6 +76,7 @@ public class HandleTask implements Runnable {
             output.flush();
             return;
         }
+        // TODO: might be null
         final List<File> files = Arrays.asList(filePath.listFiles());
         output.writeInt(files.size());
         for (File file : files) {

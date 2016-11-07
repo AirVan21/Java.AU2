@@ -2,26 +2,40 @@ package ru.spbau.javacourse.ftp.utils;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+
+import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Optional;
 
 /**
  * FileManager class - IOUtils wrapper class which provides functionality for IO operations
  */
 public class FileManager {
-    public static void writeFileToOutputStream(DataOutputStream output, File file) throws IOException {
+    public static void writeFileToOutputStream(DataOutputStream output, File file)  {
         if (!file.exists() || file.isDirectory()) {
             // request with zero size
-            output.writeLong(0);
+            try {
+                output.writeLong(0);
+            } catch (IOException e) {
+                GlobalLogger.log(FileManager.class.getName(), e.getMessage());
+            }
             return;
         }
 
-        output.writeLong(file.length());
-        IOUtils.copyLarge(new FileInputStream(file), output);
+        // try-with-resources
+        try (final FileInputStream input = new FileInputStream(file)) {
+            try {
+                output.writeLong(file.length());
+                IOUtils.copyLarge(input, output);
+            } catch (IOException e) {
+                GlobalLogger.log(FileManager.class.getName(), e.getMessage());
+            }
+        } catch (IOException e) {
+            GlobalLogger.log(FileManager.class.getName(), e.getMessage());
+        }
     }
 
     /**
@@ -30,14 +44,8 @@ public class FileManager {
      * @return file if it exists
      */
     public static Optional<File> getFile(String filePath) {
-        File file;
-        try {
-            file = new File(filePath);
-        } catch (NullPointerException exc) {
-            return Optional.empty();
-        }
-
-        return file.exists() ? Optional.of(file) : Optional.empty();
+        final Path path = Paths.get(filePath);
+        return Files.exists(path) ? Optional.of(new File(filePath)) : Optional.empty();
     }
 
     /**
@@ -64,14 +72,5 @@ public class FileManager {
     public static Optional<String> readFile(String path) {
         Optional<File> file = getFile(path);
         return file.isPresent() ? readFile(file.get()) : Optional.empty();
-    }
-
-    /**
-     * Deletes file quietly
-     * @param filePath file path
-     */
-    public static void deleteFile(String filePath) {
-        final File file = new File(filePath);
-        FileUtils.deleteQuietly(file);
     }
 }

@@ -23,7 +23,7 @@ public class Server {
      */
     public synchronized void start(int port) throws IOException {
         if (socket.isPresent()) {
-            GlobalLogger.log(getClass().getName() + "Server is already up!");
+            GlobalLogger.log(getClass().getName(), "Server is already up!");
             return;
         }
 
@@ -39,7 +39,7 @@ public class Server {
      */
     public synchronized void stop() throws IOException, InterruptedException {
         if (!socket.isPresent()) {
-            GlobalLogger.log(getClass().getName() + " " + "Couldn't stop empty socket!");
+            GlobalLogger.log(getClass().getName(), "Couldn't stop empty socket!");
             return;
         }
 
@@ -57,7 +57,6 @@ public class Server {
             try {
                 Socket connection = socket.get().accept();
                 HandleTask task = new HandleTask(connection);
-                task.Initialize();
                 new Thread(task).start();
             } catch (IOException e) {
                 // already closed exception

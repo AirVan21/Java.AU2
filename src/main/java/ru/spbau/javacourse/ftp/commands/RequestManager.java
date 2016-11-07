@@ -2,6 +2,7 @@ package ru.spbau.javacourse.ftp.commands;
 
 import org.apache.commons.io.IOUtils;
 import ru.spbau.javacourse.ftp.utils.FolderEntity;
+import ru.spbau.javacourse.ftp.utils.GlobalLogger;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -30,15 +31,27 @@ public class RequestManager {
     }
 
     /**
-     * Reads info from inputStream to outputFile
-     * @param inputStream stream (source info provider)
+     * Reads info from input to outputFile
+     * @param input stream (source info provider)
      * @param outputFile file where info will be written
-     * @throws IOException
      */
-    public static void getFileResponse(DataInputStream inputStream, File outputFile) throws IOException {
-        final long size = inputStream.readLong();
-        final FileWriter writer = new FileWriter(outputFile);
-        IOUtils.copyLarge(new InputStreamReader(inputStream), writer, 0, size);
-        writer.close();
+    public static void getFileResponse(DataInputStream input, File outputFile) {
+        final long size;
+        try {
+            size = input.readLong();
+        } catch (IOException e) {
+            GlobalLogger.log(RequestManager.class.getName(), "couldn't read file size!");
+            return;
+        }
+        // try-with-resources
+        try (final FileOutputStream output = new FileOutputStream(outputFile)) {
+            try {
+                IOUtils.copyLarge(input, output, 0, size);
+            } catch (IOException e) {
+                GlobalLogger.log(RequestManager.class.getName(), "couldn't copyLarge!");
+            }
+        } catch (IOException e) {
+            GlobalLogger.log(RequestManager.class.getName(), "couldn't create file output stream!");
+        }
     }
 }
