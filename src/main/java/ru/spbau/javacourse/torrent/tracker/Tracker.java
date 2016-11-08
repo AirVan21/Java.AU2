@@ -33,7 +33,7 @@ public class Tracker {
      */
     public synchronized void stop() throws IOException, InterruptedException {
         if (socket == null) {
-            GlobalLogger.log(getClass().getName(), "Couldn't stop empty socket!");
+            GlobalLogger.log(getClass().getName(), "stop(): Couldn't stop empty socket!");
             return;
         }
 
@@ -45,19 +45,32 @@ public class Tracker {
     /**
      * Listens connections
      */
-    public void handle() {
-        while (!isStopped) {
+    private void handle() {
+        while (!isStopped && !socket.isClosed()) {
             try {
-                Socket connection = socket.accept();
-                HandleTask task = new HandleTask(connection);
-                new Thread(task).start();
+                acceptTask();
             } catch (IOException e) {
-
+                GlobalLogger.log(getClass().getName(), "handle(): failed to create task thread.");
             }
-
             synchronized (this) {
                 notify();
             }
         }
+    }
+
+    /**
+     * Accepts connection to server socket
+     * @throws IOException
+     */
+    private void acceptTask() throws IOException {
+        final Socket connection;
+        try {
+            connection = socket.accept();
+        } catch (IOException e) {
+            return;
+        }
+
+        HandleTask task = new HandleTask(connection);
+        new Thread(task).start();
     }
 }

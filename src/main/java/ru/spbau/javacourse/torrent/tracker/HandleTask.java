@@ -13,8 +13,8 @@ import java.net.Socket;
  */
 public class HandleTask implements Runnable {
     private final Socket taskSocket;
-    private DataInputStream input;
-    private DataOutputStream output;
+    private final DataInputStream input;
+    private final DataOutputStream output;
 
     public HandleTask(Socket connection) throws IOException {
         taskSocket = connection;
@@ -29,7 +29,7 @@ public class HandleTask implements Runnable {
     public void run() {
         try {
             while (!taskSocket.isClosed()) {
-                final int requestId = input.readInt();
+                final int requestId = taskSocket.isClosed() ? 0 : input.readInt();
                 executeRequest(requestId);
             }
         }
@@ -55,7 +55,7 @@ public class HandleTask implements Runnable {
                 break;
             case TorrentRequest.GET_SOURCES_REQUEST:
                 break;
-            case TorrentRequest.GET_UDPATE_REQUEST:
+            case TorrentRequest.GET_UPDATE_REQUEST:
                 break;
             case TorrentRequest.GET_UPLOAD_REQUEST:
                 break;
