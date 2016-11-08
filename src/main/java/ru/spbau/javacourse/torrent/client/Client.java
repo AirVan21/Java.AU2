@@ -1,12 +1,14 @@
 package ru.spbau.javacourse.torrent.client;
 
 
+import ru.spbau.javacourse.torrent.database.enity.SharedFileRecord;
 import ru.spbau.javacourse.torrent.utils.GlobalLogger;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -15,13 +17,14 @@ import java.util.TimerTask;
  */
 public class Client {
     private final String hostName;
-    private final int port;
+    private final short port;
+    private Socket socket;
     private DataInputStream input;
     private DataOutputStream output;
-    private Socket socket;
     private final Timer timer = new Timer();
+    private final FileBrowser browser = new FileBrowser();
 
-    public Client(String hostName, int port) {
+    public Client(String hostName, short port) {
         this.hostName = hostName;
         this.port = port;
     }
@@ -59,7 +62,7 @@ public class Client {
     }
 
     public void doUpdate() {
-        System.out.println("Update");
+        final List<SharedFileRecord> records = browser.
     }
 
     private synchronized void subscribe() {

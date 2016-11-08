@@ -6,4 +6,5 @@ package ru.spbau.javacourse.torrent.utils;
 public class GlobalConstants {
     public final static String CLIENT_DB_NAME = "CLIENT_DB";
     public final static String SERVER_DB_NAME = "SERVER_DB";
+    public final static long CHUNK_SIZE = 1024 * 1024;
 }
