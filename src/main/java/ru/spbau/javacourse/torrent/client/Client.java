@@ -1,8 +1,9 @@
 package ru.spbau.javacourse.torrent.client;
 
 
+import lombok.extern.java.Log;
 import ru.spbau.javacourse.torrent.database.enity.SharedFileRecord;
-import ru.spbau.javacourse.torrent.utils.GlobalLogger;
+import ru.spbau.javacourse.torrent.protocol.ClientToServerProtocol;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -15,18 +16,21 @@ import java.util.TimerTask;
 /**
  * Client class - implementation of client logic.
  */
+@Log
 public class Client {
     private final String hostName;
     private final short port;
+    private final String userName;
     private Socket socket;
     private DataInputStream input;
     private DataOutputStream output;
     private final Timer timer = new Timer();
     private final FileBrowser browser = new FileBrowser();
 
-    public Client(String hostName, short port) {
+    public Client(String hostName, short port, String userName) {
         this.hostName = hostName;
         this.port = port;
+        this.userName = userName;
     }
 
     /**
@@ -35,7 +39,7 @@ public class Client {
      */
     public synchronized void connectToServer() throws IOException {
         if (socket != null) {
-            GlobalLogger.log(getClass().getName(), "Can't reconnect!");
+            log.info("Can't reconnect!");
             return;
         }
 
@@ -51,18 +55,21 @@ public class Client {
      */
     public synchronized void disconnectFromServer() throws IOException {
         if (socket == null) {
-            GlobalLogger.log(getClass().getName(), "Connection is not found!");
+            log.info("Connection is not found!");
             return;
         }
 
         timer.cancel();
-        input.close();
-        output.close();
         socket.close();
     }
 
-    public void doUpdate() {
-        final List<SharedFileRecord> records = browser.
+    public synchronized void doUpdate() {
+        final List<SharedFileRecord> records = browser.getPublishedSharedFileRecords();
+        try {
+            ClientToServerProtocol.sendUpdateToServer(output, port, records);
+        } catch (IOException e) {
+            log.info("Impossible to send update to server");
+        }
     }
 
     private synchronized void subscribe() {

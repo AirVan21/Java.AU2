@@ -1,6 +1,8 @@
 package ru.spbau.javacourse.torrent.tracker;
 
+import lombok.extern.java.Log;
 import ru.spbau.javacourse.torrent.commands.TorrentRequest;
+import ru.spbau.javacourse.torrent.protocol.ClientToServerProtocol;
 import ru.spbau.javacourse.torrent.utils.GlobalLogger;
 
 import java.io.DataInputStream;
@@ -11,6 +13,7 @@ import java.net.Socket;
 /**
  * HandleTask is a class which handles Client request (and executes it)
  */
+@Log
 public class HandleTask implements Runnable {
     private final Socket taskSocket;
     private final DataInputStream input;
@@ -29,7 +32,7 @@ public class HandleTask implements Runnable {
     public void run() {
         try {
             while (!taskSocket.isClosed()) {
-                final int requestId = taskSocket.isClosed() ? 0 : input.readInt();
+                final byte requestId = input.readByte();
                 executeRequest(requestId);
             }
         }
@@ -49,13 +52,14 @@ public class HandleTask implements Runnable {
      * @param requestId id of request
      * @throws IOException
      */
-    private void executeRequest(int requestId) throws IOException {
+    private void executeRequest(byte requestId) throws IOException {
         switch (requestId) {
             case TorrentRequest.GET_LIST_REQUEST:
                 break;
             case TorrentRequest.GET_SOURCES_REQUEST:
                 break;
             case TorrentRequest.GET_UPDATE_REQUEST:
+                ClientToServerProtocol.receiveUpdateFromClient(input);
                 break;
             case TorrentRequest.GET_UPLOAD_REQUEST:
                 break;

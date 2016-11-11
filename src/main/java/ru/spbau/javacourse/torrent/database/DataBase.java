@@ -22,7 +22,7 @@ public class DataBase {
         datastore.save(record);
     }
 
-    public List<SharedFileRecord> getPublishedFiles() {
+    public List<SharedFileRecord> getPublishedSharedFiles() {
         return datastore
                 .find(SharedFileRecord.class)
                 .field("isPublished")

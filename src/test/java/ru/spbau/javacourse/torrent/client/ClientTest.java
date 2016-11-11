@@ -7,6 +7,7 @@ import ru.spbau.javacourse.torrent.tracker.Tracker;
  *
  */
 public class ClientTest {
+    private final static String USER_NAME_ONE = "ONE";
     private final static short SERVER_PORT = 8081;
     private final static String HOST_NAME = "localhost";
 
@@ -15,7 +16,7 @@ public class ClientTest {
         final Tracker tracker = new Tracker();
         tracker.start(SERVER_PORT);
 
-        final Client client = new Client(HOST_NAME, SERVER_PORT);
+        final Client client = new Client(HOST_NAME, SERVER_PORT, USER_NAME_ONE);
         client.connectToServer();
 
         client.disconnectFromServer();
@@ -32,13 +33,14 @@ public class ClientTest {
         final Tracker tracker = new Tracker();
         tracker.start(SERVER_PORT);
 
-        final Client client = new Client(HOST_NAME, SERVER_PORT);
+        final Client client = new Client(HOST_NAME, SERVER_PORT, USER_NAME_ONE);
         client.connectToServer();
 
+        client.doUpdate();
+        client.doUpdate();
         client.doUpdate();
 
         client.disconnectFromServer();
         tracker.stop();
     }
-
 }

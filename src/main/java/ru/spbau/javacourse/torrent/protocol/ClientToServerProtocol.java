@@ -3,6 +3,7 @@ package ru.spbau.javacourse.torrent.protocol;
 import ru.spbau.javacourse.torrent.commands.TorrentRequest;
 import ru.spbau.javacourse.torrent.database.enity.SharedFileRecord;
 
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.List;
@@ -19,6 +20,15 @@ public class ClientToServerProtocol {
         for (SharedFileRecord record : data) {
             output.writeInt(record.getFileServerId());
         }
+
         output.flush();
+    }
+
+    public static void receiveUpdateFromClient(DataInputStream input) throws IOException {
+        short port = input.readShort();
+        final int size = input.readInt();
+        while (size > 0) {
+            int fileId = input.readInt();
+        }
     }
 }

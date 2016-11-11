@@ -70,7 +70,7 @@ public class Tracker {
             return;
         }
 
-        HandleTask task = new HandleTask(connection);
+        final HandleTask task = new HandleTask(connection);
         new Thread(task).start();
     }
 }

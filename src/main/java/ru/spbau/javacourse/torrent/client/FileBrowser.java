@@ -19,6 +19,10 @@ public class FileBrowser {
 
     public FileBrowser() {}
 
+    public List<SharedFileRecord> getPublishedSharedFileRecords() {
+        return db.getPublishedSharedFiles();
+    }
+
     public void addLocalSharedFileRecord(String pathToFile) {
         final Path path = Paths.get(pathToFile);
         final File file = new File(pathToFile);
@@ -42,4 +46,5 @@ public class FileBrowser {
 
         return chunks;
     }
+
 }
