@@ -1,18 +1,17 @@
 package ru.spbau.javacourse.ftp.client;
 
+import lombok.extern.java.Log;
 import ru.spbau.javacourse.ftp.commands.Request;
 import ru.spbau.javacourse.ftp.commands.RequestManager;
 import ru.spbau.javacourse.ftp.utils.FolderEntity;
-import ru.spbau.javacourse.ftp.utils.GlobalLogger;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
-import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Client class - implementation of client logic.
@@ -20,12 +19,13 @@ import java.util.Optional;
  *  1. List (listing files and dirs)
  *  2. Get (downloading selected file)
  */
+@Log
 public class Client {
     private final String hostName;
     private final int port;
     private DataInputStream input;
     private DataOutputStream output;
-    private Optional<Socket> socket = Optional.empty();
+    private Socket socket;
 
     public Client(String hostName, int port) {
         this.hostName = hostName;
@@ -37,15 +37,14 @@ public class Client {
      * @throws IOException
      */
     public synchronized void connect() throws IOException {
-        if (socket.isPresent()) {
-            GlobalLogger.log(getClass().getName(), "Can't reconnect!");
+        if (socket != null) {
+            log.info("Can't reconnect!");
             return;
         }
 
-        final Socket clientSocket = new Socket(hostName, port);
-        socket = Optional.of(clientSocket);
-        input = new DataInputStream(clientSocket.getInputStream());
-        output = new DataOutputStream(clientSocket.getOutputStream());
+        socket = new Socket(hostName, port);
+        input = new DataInputStream(socket.getInputStream());
+        output = new DataOutputStream(socket.getOutputStream());
     }
 
     /**
@@ -53,39 +52,57 @@ public class Client {
      * @throws IOException
      */
     public synchronized void disconnect() throws IOException {
-        if (!socket.isPresent()) {
-            GlobalLogger.log(getClass().getName(), "Connection is not found!");
+        if (socket == null) {
+            log.info("Connection is not found!");
             return;
         }
 
-        socket.get().close();
-        socket = Optional.empty();
+        // closes input/output streams
+        socket.close();
     }
 
     /**
      * Sending List request to server (waiting for result)
      * @param targetPath path where ls should be performed
      * @return list if items which represents files of dirs
-     * @throws IOException
      */
-    public synchronized List<FolderEntity> executeListRequest(String targetPath) throws IOException {
-        output.writeInt(Request.GET_LIST_REQUEST);
-        output.writeUTF(targetPath);
-        output.flush();
+    public synchronized List<FolderEntity> executeListRequest(String targetPath) {
+        List<FolderEntity> result = new ArrayList<>();
+        try {
+            output.writeInt(Request.GET_LIST_REQUEST);
+            output.writeUTF(targetPath);
+            output.flush();
+            result = RequestManager.getListResponse(input);
+        } catch (IOException e) {
+            log.info(e.getMessage());
+            try {
+                disconnect();
+            } catch (IOException closeException) {
+                log.info("Exception on close!");
+            }
+        }
 
-        return RequestManager.getListResponse(input);
+        return result;
     }
 
     /**
      * Sending file Get request to server
      * @param pathToFile path to target file
      * @param outputFile file where Get result will be written
-     * @throws IOException
      */
-    public synchronized void executeGetRequest(String pathToFile, File outputFile) throws IOException {
-        output.writeInt(Request.GET_FILE_REQUEST);
-        output.writeUTF(pathToFile);
-        output.flush();
+    public synchronized void executeGetRequest(String pathToFile, File outputFile) {
+        try {
+            output.writeInt(Request.GET_FILE_REQUEST);
+            output.writeUTF(pathToFile);
+            output.flush();
+        } catch (IOException e) {
+            log.info(e.getMessage());
+            try {
+                disconnect();
+            } catch (IOException closeException) {
+                log.info("Exception on close!");
+            }
+        }
 
         RequestManager.getFileResponse(input, outputFile);
     }

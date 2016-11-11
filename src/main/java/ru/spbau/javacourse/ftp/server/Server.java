@@ -1,17 +1,17 @@
 package ru.spbau.javacourse.ftp.server;
 
-import ru.spbau.javacourse.ftp.utils.GlobalLogger;
+import lombok.extern.java.Log;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Optional;
 
 /**
  * Server class - class which handles Client requests and resolves connections
  */
+@Log
 public class Server {
-    private Optional<ServerSocket> socket = Optional.empty();
+    private ServerSocket socket;
     private volatile boolean isStopped;
 
     public Server() {}
@@ -22,12 +22,12 @@ public class Server {
      * @throws IOException
      */
     public synchronized void start(int port) throws IOException {
-        if (socket.isPresent()) {
-            GlobalLogger.log(getClass().getName(), "Server is already up!");
+        if (socket != null) {
+            log.info("Server is already up!");
             return;
         }
 
-        socket = Optional.of(new ServerSocket(port));
+        socket = new ServerSocket(port);
         isStopped = false;
         new Thread(this::handle).start();
     }
@@ -38,34 +38,47 @@ public class Server {
      * @throws InterruptedException
      */
     public synchronized void stop() throws IOException, InterruptedException {
-        if (!socket.isPresent()) {
-            GlobalLogger.log(getClass().getName(), "Couldn't stop empty socket!");
+        if (socket == null) {
+            log.info("Couldn't stop empty socket!");
             return;
         }
 
         isStopped = true;
-        socket.get().close();
-        socket = Optional.empty();
+        socket.close();
         wait();
     }
 
     /**
      * Listens connections
      */
-    public void handle() {
+    private void handle() {
         while (!isStopped) {
             try {
-                Socket connection = socket.get().accept();
-                HandleTask task = new HandleTask(connection);
-                new Thread(task).start();
+                acceptTask();
             } catch (IOException e) {
-                // already closed exception
+                log.info("Couldn't accept task!");
             }
 
             synchronized (this) {
                 notify();
             }
         }
+    }
+
+    /**
+     * Accepts connection to server socket
+     * @throws IOException
+     */
+    private void acceptTask() throws IOException {
+        final Socket connection;
+        try {
+            connection = socket.accept();
+        } catch (IOException e) {
+            return;
+        }
+
+        final HandleTask task = new HandleTask(connection);
+        new Thread(task).start();
     }
 }
 

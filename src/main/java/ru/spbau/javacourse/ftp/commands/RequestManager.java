@@ -1,8 +1,8 @@
 package ru.spbau.javacourse.ftp.commands;
 
+import lombok.extern.java.Log;
 import org.apache.commons.io.IOUtils;
 import ru.spbau.javacourse.ftp.utils.FolderEntity;
-import ru.spbau.javacourse.ftp.utils.GlobalLogger;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -11,6 +11,7 @@ import java.util.List;
 /**
  * RequestManager is a class for aggregation response waiting and handling logic
  */
+@Log
 public class RequestManager {
     /**
      * Reads info about files and directories from inputStream
@@ -40,7 +41,7 @@ public class RequestManager {
         try {
             size = input.readLong();
         } catch (IOException e) {
-            GlobalLogger.log(RequestManager.class.getName(), "couldn't read file size!");
+            log.info("Couldn't read file size!");
             return;
         }
         // try-with-resources
@@ -48,10 +49,10 @@ public class RequestManager {
             try {
                 IOUtils.copyLarge(input, output, 0, size);
             } catch (IOException e) {
-                GlobalLogger.log(RequestManager.class.getName(), "couldn't copyLarge!");
+                log.info("Couldn't copyLarge!");
             }
         } catch (IOException e) {
-            GlobalLogger.log(RequestManager.class.getName(), "couldn't create file output stream!");
+            log.info("Couldn't create file output stream!");
         }
     }
 }

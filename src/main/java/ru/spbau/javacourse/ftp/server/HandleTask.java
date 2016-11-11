@@ -1,8 +1,8 @@
 package ru.spbau.javacourse.ftp.server;
 
+import lombok.extern.java.Log;
 import ru.spbau.javacourse.ftp.commands.Request;
 import ru.spbau.javacourse.ftp.utils.FileManager;
-import ru.spbau.javacourse.ftp.utils.GlobalLogger;
 
 import java.io.*;
 import java.net.Socket;
@@ -12,6 +12,7 @@ import java.util.List;
 /**
  * HandleTask is a class which handles Client request (and executes it)
  */
+@Log
 public class HandleTask implements Runnable {
     private final Socket taskSocket;
     private DataInputStream input;
@@ -35,12 +36,12 @@ public class HandleTask implements Runnable {
             }
         }
         catch (IOException e) {
-            GlobalLogger.log(HandleTask.class.getName(), e.getMessage());
+            // skip
         } finally {
             try {
                 taskSocket.close();
             } catch (IOException e) {
-                GlobalLogger.log(getClass().getName(), e.getMessage());
+               log.info(e.getMessage());
             }
         }
     }
@@ -59,7 +60,7 @@ public class HandleTask implements Runnable {
                 handleGetFileRequest();
                 break;
             default:
-                GlobalLogger.log(getClass().getName(), "Invalid command!");
+                log.info("Invalid command!");
                 taskSocket.close();
         }
     }
@@ -71,15 +72,16 @@ public class HandleTask implements Runnable {
     private void handleGetListRequest() throws IOException {
         final String path = input.readUTF();
         final File filePath = new File(path);
-        if (!filePath.exists()) {
+        final File[] files = filePath.listFiles();
+        if (!filePath.exists() || files == null) {
             output.writeInt(0);
             output.flush();
             return;
         }
-        // TODO: might be null
-        final List<File> files = Arrays.asList(filePath.listFiles());
-        output.writeInt(files.size());
-        for (File file : files) {
+
+        final List<File> filesList = Arrays.asList(files);
+        output.writeInt(filesList.size());
+        for (File file : filesList) {
             output.writeUTF(file.getName());
             output.writeBoolean(file.isDirectory());
         }
@@ -91,7 +93,7 @@ public class HandleTask implements Runnable {
      * @throws IOException
      */
     private void handleGetFileRequest() throws IOException {
-        String path = input.readUTF();
+        final String path = input.readUTF();
         final File file = new File(path);
         FileManager.writeFileToOutputStream(output, file);
         output.flush();
