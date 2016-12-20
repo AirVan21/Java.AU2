@@ -3,28 +3,28 @@ package ru.spbau.javacourse.torrent.database;
 import com.mongodb.MongoClient;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Morphia;
-import ru.spbau.javacourse.torrent.database.enity.SharedFileRecord;
+import ru.spbau.javacourse.torrent.database.enity.ClientFileRecord;
 
 import java.util.List;
 
 /**
- * DataBase class represents a MongoDB wrapper for torrent project
+ * ClientDataBase class represents a MongoDB wrapper for torrent project
  */
-public class DataBase {
+public class ClientDataBase {
     private final Datastore datastore;
 
-    public DataBase(String name) {
+    public ClientDataBase(String name) {
         final MongoClient mongo = new MongoClient();
         datastore = new Morphia().createDatastore(mongo, name);
     }
 
-    public void saveSharedFileRecord(SharedFileRecord record) {
+    public void saveFileRecord(ClientFileRecord record) {
         datastore.save(record);
     }
 
-    public List<SharedFileRecord> getPublishedSharedFiles() {
+    public List<ClientFileRecord> getPublishedSharedFiles() {
         return datastore
-                .find(SharedFileRecord.class)
+                .find(ClientFileRecord.class)
                 .field("isPublished")
                 .equal(true)
                 .asList();

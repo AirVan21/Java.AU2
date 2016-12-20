@@ -1,7 +1,5 @@
 package ru.spbau.javacourse.torrent.tracker;
 
-import ru.spbau.javacourse.torrent.utils.GlobalLogger;
-
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -17,7 +15,6 @@ public class Tracker {
 
     public synchronized void start(int port) throws IOException {
         if (socket != null) {
-            GlobalLogger.log(getClass().getName(), "");
             return;
         }
 
@@ -33,7 +30,6 @@ public class Tracker {
      */
     public synchronized void stop() throws IOException, InterruptedException {
         if (socket == null) {
-            GlobalLogger.log(getClass().getName(), "stop(): Couldn't stop empty socket!");
             return;
         }
 
@@ -50,7 +46,6 @@ public class Tracker {
             try {
                 acceptTask();
             } catch (IOException e) {
-                GlobalLogger.log(getClass().getName(), "handle(): failed to create task thread.");
             }
             synchronized (this) {
                 notify();

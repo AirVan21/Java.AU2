@@ -8,8 +8,8 @@ import ru.spbau.javacourse.torrent.tracker.Tracker;
  */
 public class ClientTest {
     private final static String USER_NAME_ONE = "ONE";
-    private final static short SERVER_PORT = 8081;
     private final static String HOST_NAME = "localhost";
+    private final static short SERVER_PORT = 8081;
 
     @Test
     public void connectToServer() throws Exception {
@@ -21,11 +21,6 @@ public class ClientTest {
 
         client.disconnectFromServer();
         tracker.stop();
-    }
-
-    @Test
-    public void disconnectFromServer() throws Exception {
-
     }
 
     @Test

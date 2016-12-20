@@ -1,50 +1,37 @@
 package ru.spbau.javacourse.torrent.client;
 
-import ru.spbau.javacourse.torrent.database.DataBase;
-import ru.spbau.javacourse.torrent.database.enity.SharedFileRecord;
+import lombok.extern.java.Log;
+import ru.spbau.javacourse.torrent.database.ClientDataBase;
+import ru.spbau.javacourse.torrent.database.enity.ClientFileRecord;
 import ru.spbau.javacourse.torrent.utils.GlobalConstants;
 
 import java.io.File;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.logging.Level;
 
 /**
  * FileBrowser class collects information about sharing files
  */
+@Log
 public class FileBrowser {
-    private final DataBase db = new DataBase(GlobalConstants.CLIENT_DB_NAME);
+    private final ClientDataBase db = new ClientDataBase(GlobalConstants.CLIENT_DB_NAME);
+    private final String downloadDirectory;
 
-    public FileBrowser() {}
+    public FileBrowser(String downloadDirectory) {
+        this.downloadDirectory = downloadDirectory;
+    }
 
-    public List<SharedFileRecord> getPublishedSharedFileRecords() {
+    public List<ClientFileRecord> getPublishedFileRecords() {
         return db.getPublishedSharedFiles();
     }
 
-    public void addLocalSharedFileRecord(String pathToFile) {
-        final Path path = Paths.get(pathToFile);
+    public void addLocalFileRecord(String pathToFile, boolean isPublished) {
         final File file = new File(pathToFile);
-        if (file.exists()) {
-            final boolean isPublished = false;
-            final List<Boolean> filledChunks = getChunks(file.length())
-                    .stream()
-                    .map(item -> true)
-                    .collect(Collectors.toList());
-            db.saveSharedFileRecord(new SharedFileRecord(path.getFileName().toString(), file.length(), filledChunks, isPublished));
+        if (file.exists() && !file.isDirectory()) {
+            db.saveFileRecord(new ClientFileRecord(file.getAbsolutePath(), file.length(), new ArrayList<>(), isPublished));
+        } else {
+            log.log(Level.WARNING, "Invalid file path = " + pathToFile);
         }
     }
-
-    private List<Boolean> getChunks(long fileSize) {
-        final List<Boolean> chunks = new ArrayList<>();
-        long elementsCount = fileSize / GlobalConstants.CHUNK_SIZE;
-        do {
-            chunks.add(false);
-            elementsCount--;
-        } while (elementsCount > 0);
-
-        return chunks;
-    }
-
 }

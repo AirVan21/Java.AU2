@@ -2,8 +2,9 @@ package ru.spbau.javacourse.torrent.client;
 
 
 import lombok.extern.java.Log;
-import ru.spbau.javacourse.torrent.database.enity.SharedFileRecord;
-import ru.spbau.javacourse.torrent.protocol.ClientToServerProtocol;
+import ru.spbau.javacourse.torrent.database.enity.ClientFileRecord;
+import ru.spbau.javacourse.torrent.protocol.ClientServerProtocol;
+import ru.spbau.javacourse.torrent.utils.GlobalConstants;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -12,6 +13,7 @@ import java.net.Socket;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.logging.Level;
 
 /**
  * Client class - implementation of client logic.
@@ -25,7 +27,7 @@ public class Client {
     private DataInputStream input;
     private DataOutputStream output;
     private final Timer timer = new Timer();
-    private final FileBrowser browser = new FileBrowser();
+    private final FileBrowser browser = new FileBrowser(GlobalConstants.DOWNLOAD_DIR);
 
     public Client(String hostName, short port, String userName) {
         this.hostName = hostName;
@@ -39,7 +41,6 @@ public class Client {
      */
     public synchronized void connectToServer() throws IOException {
         if (socket != null) {
-            log.info("Can't reconnect!");
             return;
         }
 
@@ -55,7 +56,6 @@ public class Client {
      */
     public synchronized void disconnectFromServer() throws IOException {
         if (socket == null) {
-            log.info("Connection is not found!");
             return;
         }
 
@@ -64,11 +64,11 @@ public class Client {
     }
 
     public synchronized void doUpdate() {
-        final List<SharedFileRecord> records = browser.getPublishedSharedFileRecords();
+        final List<ClientFileRecord> records = browser.getPublishedFileRecords();
         try {
-            ClientToServerProtocol.sendUpdateToServer(output, port, records);
+            ClientServerProtocol.sendUpdateToServer(output, port, records);
         } catch (IOException e) {
-            log.info("Impossible to send update to server");
+            log.log(Level.WARNING, e.getMessage());
         }
     }
 

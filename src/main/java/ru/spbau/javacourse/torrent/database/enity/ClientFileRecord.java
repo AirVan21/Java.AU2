@@ -8,24 +8,34 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * SharedFileRecord is a meta-data file which describes single file (available for torrent download)
+ * ClientFileRecord is a meta-data file which describes single file (available for torrent download)
  */
-@Entity("SharedFileRecord")
-public class SharedFileRecord {
+@Entity("ClientFileRecord")
+public class ClientFileRecord {
     @Id
     private ObjectId id;
     private String fileName = "";
     private long fileSize;
     private boolean isPublished = false;
     private int fileServerId;
-    private List<Boolean> filledChunks = new ArrayList<>();
+    private List<Boolean> emptyChunks = new ArrayList<>();
 
-    public SharedFileRecord() {}
+    /**
+     * Empty Constructor for Mongo DB
+     */
+    public ClientFileRecord() {}
 
-    public SharedFileRecord(String fileName, long fileSize, List<Boolean> filledChunks, boolean isPublished) {
+    /**
+     * File Record constructor
+     * @param fileName - name of the file
+     * @param fileSize - size of the file
+     * @param emptyChunks - ids of chunks which are empty
+     * @param isPublished - flag, true is file is available for downloading (false otherwise)
+     */
+    public ClientFileRecord(String fileName, long fileSize, List<Boolean> emptyChunks, boolean isPublished) {
         this.fileName = fileName;
         this.fileSize = fileSize;
-        this.filledChunks = filledChunks;
+        this.emptyChunks = emptyChunks;
         this.isPublished = isPublished;
     }
 
@@ -57,7 +67,7 @@ public class SharedFileRecord {
         this.fileServerId = fileServerId;
     }
 
-    public List<Boolean> getFilledChunks() {
-        return filledChunks;
+    public List<Boolean> getEmptyChunks() {
+        return emptyChunks;
     }
 }

@@ -2,13 +2,13 @@ package ru.spbau.javacourse.torrent.tracker;
 
 import lombok.extern.java.Log;
 import ru.spbau.javacourse.torrent.commands.TorrentRequest;
-import ru.spbau.javacourse.torrent.protocol.ClientToServerProtocol;
-import ru.spbau.javacourse.torrent.utils.GlobalLogger;
+import ru.spbau.javacourse.torrent.protocol.ClientServerProtocol;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.logging.Level;
 
 /**
  * HandleTask is a class which handles Client request (and executes it)
@@ -37,12 +37,11 @@ public class HandleTask implements Runnable {
             }
         }
         catch (IOException e) {
-            GlobalLogger.log(HandleTask.class.getName(), e.getMessage());
         } finally {
             try {
                 taskSocket.close();
             } catch (IOException e) {
-                GlobalLogger.log(getClass().getName(), e.getMessage());
+                log.log(Level.WARNING, e.getMessage());
             }
         }
     }
@@ -59,7 +58,7 @@ public class HandleTask implements Runnable {
             case TorrentRequest.GET_SOURCES_REQUEST:
                 break;
             case TorrentRequest.GET_UPDATE_REQUEST:
-                ClientToServerProtocol.receiveUpdateFromClient(input);
+                ClientServerProtocol.sendUpdateFromServer(input);
                 break;
             case TorrentRequest.GET_UPLOAD_REQUEST:
                 break;
