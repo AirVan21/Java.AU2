@@ -26,8 +26,9 @@ public class FileBrowser {
         return db.getPublishedSharedFiles();
     }
 
-    public void addLocalFileRecord(String pathToFile, boolean isPublished) {
+    public void addLocalFile(String pathToFile) {
         final File file = new File(pathToFile);
+        final boolean isPublished = false;
         if (file.exists() && !file.isDirectory()) {
             db.saveFileRecord(new ClientFileRecord(file.getAbsolutePath(), file.length(), new ArrayList<>(), isPublished));
         } else {

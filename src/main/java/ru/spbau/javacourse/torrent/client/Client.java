@@ -22,17 +22,15 @@ import java.util.logging.Level;
 public class Client {
     private final String hostName;
     private final short port;
-    private final String userName;
     private Socket socket;
     private DataInputStream input;
     private DataOutputStream output;
     private final Timer timer = new Timer();
     private final FileBrowser browser = new FileBrowser(GlobalConstants.DOWNLOAD_DIR);
 
-    public Client(String hostName, short port, String userName) {
+    public Client(String hostName, short port) {
         this.hostName = hostName;
         this.port = port;
-        this.userName = userName;
     }
 
     /**
@@ -67,9 +65,14 @@ public class Client {
         final List<ClientFileRecord> records = browser.getPublishedFileRecords();
         try {
             ClientServerProtocol.sendUpdateToServer(output, port, records);
+            ClientServerProtocol.receiveUpdateResponseFromServer(input);
         } catch (IOException e) {
             log.log(Level.WARNING, e.getMessage());
         }
+    }
+
+    public synchronized void doUpload(String pathToFile) {
+
     }
 
     private synchronized void subscribe() {

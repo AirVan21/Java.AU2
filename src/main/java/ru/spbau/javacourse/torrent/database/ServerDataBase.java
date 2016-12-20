@@ -6,11 +6,16 @@ import ru.spbau.javacourse.torrent.database.enity.User;
 import java.util.*;
 
 public class ServerDataBase {
-    private Map<User, List<ServerFileRecord>> userToFilesMapping = new HashMap<>();
+    private final Map<User, Set<Integer>> userToIdsMapping = new HashMap<>();
+    private final Set<ServerFileRecord> records = new HashSet<>();
 
-    public ServerDataBase() {
+    public ServerDataBase() {}
+
+    public synchronized void addUserInformation(User user, Set<Integer> ids) {
+        userToIdsMapping.put(user, ids);
     }
 
-    public void addServerFileRecords(User user, List<ServerFileRecord> records) {
+    public synchronized void addFileRecord(ServerFileRecord record) {
+        records.add(record);
     }
 }

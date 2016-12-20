@@ -1,8 +1,14 @@
 package ru.spbau.javacourse.torrent.tracker;
 
+import ru.spbau.javacourse.torrent.database.ServerDataBase;
+import ru.spbau.javacourse.torrent.database.enity.ServerFileRecord;
+import ru.spbau.javacourse.torrent.database.enity.User;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Tracker class
@@ -10,6 +16,7 @@ import java.net.Socket;
 public class Tracker {
     private ServerSocket socket;
     private volatile boolean isStopped;
+    private final ServerDataBase serverDataBase = new ServerDataBase();
 
     public  Tracker() {}
 
@@ -39,6 +46,23 @@ public class Tracker {
     }
 
     /**
+     * Adds user update information to ServerDataBase
+     * @param user user which sent update message
+     * @param ids file ids
+     */
+    public synchronized void addUserInformation(User user, Set<Integer> ids) {
+        serverDataBase.addUserInformation(user, ids);
+    }
+
+    /**
+     * Adds new file record to ServerDataBase
+     * @param record file record
+     */
+    public synchronized void addServerFileRecord(ServerFileRecord record) {
+        serverDataBase.addFileRecord(record);
+    }
+
+    /**
      * Listens connections
      */
     private void handle() {
@@ -65,7 +89,7 @@ public class Tracker {
             return;
         }
 
-        final HandleTask task = new HandleTask(connection);
+        final HandleTask task = new HandleTask(this, connection);
         new Thread(task).start();
     }
 }

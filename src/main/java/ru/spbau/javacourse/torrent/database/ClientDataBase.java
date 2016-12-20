@@ -22,6 +22,22 @@ public class ClientDataBase {
         datastore.save(record);
     }
 
+    public void publishFileRecord(ClientFileRecord record) {
+
+    }
+
+    public <T> List<ClientFileRecord> getFileRecords(String fieldName, T value) {
+        return datastore
+                .find(ClientFileRecord.class)
+                .field(fieldName)
+                .equal(value)
+                .asList();
+    }
+
+    public <T> void updateFileRecord(ClientFileRecord record, String fieldName, T value) {
+
+    }
+
     public List<ClientFileRecord> getPublishedSharedFiles() {
         return datastore
                 .find(ClientFileRecord.class)

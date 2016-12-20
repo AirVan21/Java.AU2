@@ -8,7 +8,7 @@ public class GlobalConstants {
     public final static String DOWNLOAD_DIR = "/downloads";
     public final static String CLIENT_DB_NAME = "CLIENT_FILE_DB";
     public final static String DEFAULT_HOST = "localhost";
-    public final static int TRACKER_PORT = 8840;
+    public final static int TRACKER_PORT = 8081;
     public final static int CLIENT_PORT_FST = 8841;
     public final static int CLIENT_PORT_SND = 8842;
 }
