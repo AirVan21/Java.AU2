@@ -1,6 +1,6 @@
 package ru.spbau.javacourse.torrent.protocol;
 
-import ru.spbau.javacourse.torrent.commands.TorrentRequest;
+import ru.spbau.javacourse.torrent.commands.TrackerRequest;
 import ru.spbau.javacourse.torrent.database.enity.ClientFileRecord;
 import ru.spbau.javacourse.torrent.database.enity.ServerFileRecord;
 
@@ -17,7 +17,7 @@ import java.util.Set;
 public class ClientServerProtocol {
 
     public static void sendUpdateToServer(DataOutputStream output, short port, List<ClientFileRecord> data) throws IOException {
-        output.writeByte(TorrentRequest.GET_UPDATE_REQUEST);
+        output.writeByte(TrackerRequest.GET_UPDATE_REQUEST);
         output.writeShort(port);
         output.writeInt(data.size());
         for (ClientFileRecord record : data) {
@@ -42,7 +42,7 @@ public class ClientServerProtocol {
     }
 
     public static void sendUploadToServer(DataOutputStream output, String fileName, long fileSize) throws IOException {
-        output.writeByte(TorrentRequest.GET_UPLOAD_REQUEST);
+        output.writeByte(TrackerRequest.GET_UPLOAD_REQUEST);
         output.writeUTF(fileName);
         output.writeLong(fileSize);
 

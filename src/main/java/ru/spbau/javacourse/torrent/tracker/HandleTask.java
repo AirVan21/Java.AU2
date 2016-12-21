@@ -1,7 +1,7 @@
 package ru.spbau.javacourse.torrent.tracker;
 
 import lombok.extern.java.Log;
-import ru.spbau.javacourse.torrent.commands.TorrentRequest;
+import ru.spbau.javacourse.torrent.commands.TrackerRequest;
 import ru.spbau.javacourse.torrent.database.enity.ServerFileRecord;
 import ru.spbau.javacourse.torrent.database.enity.User;
 import ru.spbau.javacourse.torrent.protocol.ClientServerProtocol;
@@ -68,18 +68,18 @@ public class HandleTask implements Runnable {
             return;
         }
         switch (requestId) {
-            case TorrentRequest.GET_LIST_REQUEST:
+            case TrackerRequest.GET_LIST_REQUEST:
                 break;
-            case TorrentRequest.GET_SOURCES_REQUEST:
+            case TrackerRequest.GET_SOURCES_REQUEST:
                 break;
-            case TorrentRequest.GET_UPDATE_REQUEST:
+            case TrackerRequest.GET_UPDATE_REQUEST:
                 short port = input.readShort();
                 Set<Integer> fileIds = ClientServerProtocol.receiveUpdateFromClient(input);
                 tracker.addUserInformation(new User(host.get(), port), fileIds);
                 output.writeBoolean(true);
                 output.flush();
                 break;
-            case TorrentRequest.GET_UPLOAD_REQUEST:
+            case TrackerRequest.GET_UPLOAD_REQUEST:
                 ServerFileRecord record = ClientServerProtocol.receiveUploadFromServer(input, host.get());
                 tracker.addServerFileRecord(record);
                 output.writeInt(record.hashCode());
