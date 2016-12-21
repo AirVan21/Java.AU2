@@ -5,7 +5,6 @@ import ru.spbau.javacourse.torrent.database.ClientDataBase;
 import ru.spbau.javacourse.torrent.database.enity.ClientFileRecord;
 import ru.spbau.javacourse.torrent.utils.GlobalConstants;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -32,6 +31,7 @@ public class FileBrowser {
     }
 
     public void publishLocalFile(String pathToFile, int fileId) {
+        log.log(Level.INFO, "publish " + pathToFile + "with id = " + Integer.toString(fileId));
         final List<ClientFileRecord> records = db.getFileRecords("fileName", pathToFile);
         if (records.size() != 1) {
             log.log(Level.WARNING, "Database has collision!");

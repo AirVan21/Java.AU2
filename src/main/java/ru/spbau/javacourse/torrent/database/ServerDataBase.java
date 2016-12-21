@@ -8,8 +8,12 @@ import java.util.*;
 public class ServerDataBase {
     private final Map<User, Set<Integer>> userToIdsMapping = new HashMap<>();
     private final Set<ServerFileRecord> records = new HashSet<>();
+    private final String serverDBDir;
 
-    public ServerDataBase() {}
+    public ServerDataBase(String serverDir) {
+        serverDBDir = serverDir;
+        initialize();
+    }
 
     public synchronized void addUserInformation(User user, Set<Integer> ids) {
         userToIdsMapping.put(user, ids);
@@ -21,5 +25,13 @@ public class ServerDataBase {
 
     public synchronized Set<User> getUsers() {
         return userToIdsMapping.keySet();
+    }
+
+    public synchronized void close() {
+
+    }
+
+    private synchronized void initialize() {
+
     }
 }

@@ -4,11 +4,13 @@ public class ServerFileRecord {
     private String name;
     private long size;
     private String source;
+    private int id;
 
     public ServerFileRecord(String name, long size, String source) {
         this.name = name;
         this.size = size;
         this.source = source;
+        this.id = hashCode();
     }
 
     public String getName() {

@@ -3,11 +3,11 @@ package ru.spbau.javacourse.torrent.tracker;
 import ru.spbau.javacourse.torrent.database.ServerDataBase;
 import ru.spbau.javacourse.torrent.database.enity.ServerFileRecord;
 import ru.spbau.javacourse.torrent.database.enity.User;
+import ru.spbau.javacourse.torrent.utils.GlobalConstants;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -16,7 +16,7 @@ import java.util.Set;
 public class Tracker {
     private ServerSocket socket;
     private volatile boolean isStopped;
-    private final ServerDataBase serverDataBase = new ServerDataBase();
+    private final ServerDataBase serverDataBase = new ServerDataBase(GlobalConstants.SERVER_DB_DIR);
 
     public  Tracker() {}
 
@@ -42,6 +42,7 @@ public class Tracker {
 
         isStopped = true;
         socket.close();
+        serverDataBase.close();
         wait();
     }
 

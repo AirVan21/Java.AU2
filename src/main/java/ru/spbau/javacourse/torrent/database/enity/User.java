@@ -2,9 +2,9 @@ package ru.spbau.javacourse.torrent.database.enity;
 
 public class User {
     private final String host;
-    private final int port;
+    private final short port;
 
-    public User(String host, int port) {
+    public User(String host, short port) {
         this.host = host;
         this.port = port;
     }
@@ -13,7 +13,7 @@ public class User {
         return host;
     }
 
-    public int getPort() {
+    public short getPort() {
         return port;
     }
 

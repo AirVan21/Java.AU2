@@ -3,6 +3,8 @@ package ru.spbau.javacourse.torrent.client;
 
 import lombok.extern.java.Log;
 import ru.spbau.javacourse.torrent.database.enity.ClientFileRecord;
+import ru.spbau.javacourse.torrent.database.enity.SimpleFileRecord;
+import ru.spbau.javacourse.torrent.database.enity.User;
 import ru.spbau.javacourse.torrent.protocol.ClientServerProtocol;
 import ru.spbau.javacourse.torrent.utils.GlobalConstants;
 
@@ -11,9 +13,7 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
-import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 import java.util.logging.Level;
 
 /**
@@ -40,10 +40,10 @@ public class Client {
      */
     public synchronized void connectToServer() throws IOException {
         log.log(Level.INFO, "Connects to server");
+
         if (socket != null) {
             return;
         }
-
         socket = new Socket(hostName, GlobalConstants.TRACKER_PORT);
         input = new DataInputStream(socket.getInputStream());
         output = new DataOutputStream(socket.getOutputStream());
@@ -56,14 +56,45 @@ public class Client {
      */
     public synchronized void disconnectFromServer() throws IOException {
         log.log(Level.INFO, "Disconnects from server");
+
         if (socket == null) {
             return;
         }
-
         timer.cancel();
         socket.close();
     }
 
+    public synchronized Optional<List<SimpleFileRecord>> doList() {
+        log.log(Level.INFO, "List command");
+
+        try {
+            ClientServerProtocol.sendListToServer(output);
+            return Optional.of(ClientServerProtocol.receiveListResponseFromServer(input));
+        } catch (IOException e) {
+            log.log(Level.WARNING, "Failed List request!");
+            log.log(Level.WARNING, e.getMessage());
+        }
+
+        return Optional.empty();
+    }
+
+    public synchronized Optional<List<User>> doSources(int fileId) {
+        log.log(Level.INFO, "Sources command");
+
+        try {
+            ClientServerProtocol.sendSourcesToServer(output, fileId);
+            return Optional.of(ClientServerProtocol.receiveSourcesResponseFromServer(input));
+        } catch (IOException e) {
+            log.log(Level.WARNING, "Failed Sources request!");
+            log.log(Level.WARNING, e.getMessage());
+        }
+
+        return Optional.empty();
+    }
+
+    /**
+     * Executes update request to server
+     */
     public synchronized void doUpdate() {
         log.log(Level.INFO, "Update command!");
 
@@ -77,6 +108,10 @@ public class Client {
         }
     }
 
+    /**
+     * Executes upload request to server
+     * @param pathToFile
+     */
     public synchronized void doUpload(String pathToFile) {
         log.log(Level.INFO, "Upload command!");
 
@@ -90,12 +125,16 @@ public class Client {
         try {
             ClientServerProtocol.sendUploadToServer(output, file.getAbsolutePath(), file.length());
             int fileId = ClientServerProtocol.receiveUploadResponseFromServer(input);
+            browser.publishLocalFile(file.getAbsolutePath(), fileId);
         } catch (IOException e) {
             log.log(Level.WARNING, "Couldn't sent upload to server");
             log.log(Level.WARNING, e.getMessage());
         }
     }
 
+    /**
+     * Schedules Update requests to server
+     */
     private synchronized void subscribe() {
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override

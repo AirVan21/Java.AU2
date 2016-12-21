@@ -6,11 +6,14 @@ import ru.spbau.javacourse.torrent.utils.GlobalConstants;
 import java.io.IOException;
 import java.util.Scanner;
 
+/**
+ * Starts Torrent Client
+ */
 public class RunClient {
 
     private static String getHelp() {
         final StringBuilder sb = new StringBuilder();
-        sb.append("HOWTO:").append("\n");
+        sb.append("Usage:").append("\n");
         sb.append("list |");
         sb.append("add <file path> |");
         sb.append("get <file id> |");
