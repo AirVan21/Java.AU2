@@ -26,13 +26,19 @@ public class FileBrowser {
         return db.getPublishedSharedFiles();
     }
 
-    public void addLocalFile(String pathToFile) {
-        final File file = new File(pathToFile);
+    public void addLocalFile(String pathToFile, long fileSize) {
         final boolean isPublished = false;
-        if (file.exists() && !file.isDirectory()) {
-            db.saveFileRecord(new ClientFileRecord(file.getAbsolutePath(), file.length(), new ArrayList<>(), isPublished));
-        } else {
-            log.log(Level.WARNING, "Invalid file path = " + pathToFile);
+        db.saveFileRecord(new ClientFileRecord(pathToFile, fileSize, new ArrayList<>(), isPublished));
+    }
+
+    public void publishLocalFile(String pathToFile, int fileId) {
+        final List<ClientFileRecord> records = db.getFileRecords("fileName", pathToFile);
+        if (records.size() != 1) {
+            log.log(Level.WARNING, "Database has collision!");
+            return;
         }
+        final ClientFileRecord targetRecord = records.get(0);
+        db.updateFileRecord(targetRecord, "fileServerId", fileId);
+        db.updateFileRecord(targetRecord, "isPublished", true);
     }
 }

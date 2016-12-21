@@ -8,6 +8,7 @@ import ru.spbau.javacourse.torrent.utils.GlobalConstants;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.List;
@@ -38,11 +39,12 @@ public class Client {
      * @throws IOException
      */
     public synchronized void connectToServer() throws IOException {
+        log.log(Level.INFO, "Connects to server");
         if (socket != null) {
             return;
         }
 
-        socket = new Socket(hostName, port);
+        socket = new Socket(hostName, GlobalConstants.TRACKER_PORT);
         input = new DataInputStream(socket.getInputStream());
         output = new DataOutputStream(socket.getOutputStream());
         subscribe();
@@ -53,6 +55,7 @@ public class Client {
      * @throws IOException
      */
     public synchronized void disconnectFromServer() throws IOException {
+        log.log(Level.INFO, "Disconnects from server");
         if (socket == null) {
             return;
         }
@@ -62,17 +65,35 @@ public class Client {
     }
 
     public synchronized void doUpdate() {
+        log.log(Level.INFO, "Update command!");
+
         final List<ClientFileRecord> records = browser.getPublishedFileRecords();
         try {
             ClientServerProtocol.sendUpdateToServer(output, port, records);
             ClientServerProtocol.receiveUpdateResponseFromServer(input);
         } catch (IOException e) {
+            log.log(Level.WARNING, "Couldn't sent update to server");
             log.log(Level.WARNING, e.getMessage());
         }
     }
 
     public synchronized void doUpload(String pathToFile) {
+        log.log(Level.INFO, "Upload command!");
 
+        final File file = new File(pathToFile);
+        if (!file.exists() || file.isDirectory()) {
+            log.log(Level.WARNING, "File path if invalid: " + pathToFile);
+            return;
+        }
+
+        browser.addLocalFile(file.getAbsolutePath(), file.length());
+        try {
+            ClientServerProtocol.sendUploadToServer(output, file.getAbsolutePath(), file.length());
+            int fileId = ClientServerProtocol.receiveUploadResponseFromServer(input);
+        } catch (IOException e) {
+            log.log(Level.WARNING, "Couldn't sent upload to server");
+            log.log(Level.WARNING, e.getMessage());
+        }
     }
 
     private synchronized void subscribe() {
@@ -82,7 +103,7 @@ public class Client {
                 doUpdate();
             }
         } // task
-                , 0 // delay (in milliseconds)
-                , 5 * 60* 1000); // period (in milliseconds)
+                , 60 * 1000       // delay (in milliseconds)
+                , 5 * 60 * 1000); // period (in milliseconds)
     }
 }

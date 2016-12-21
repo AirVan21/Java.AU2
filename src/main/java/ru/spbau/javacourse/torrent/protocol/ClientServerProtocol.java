@@ -56,7 +56,7 @@ public class ClientServerProtocol {
         return new ServerFileRecord(name, size, source);
     }
 
-    public static int receiveUplodaResponseFromServer(DataInputStream input) throws IOException {
+    public static int receiveUploadResponseFromServer(DataInputStream input) throws IOException {
         return input.readInt();
     }
 }

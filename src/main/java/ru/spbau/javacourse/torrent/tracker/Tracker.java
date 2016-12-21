@@ -63,6 +63,14 @@ public class Tracker {
     }
 
     /**
+     * Returns active tracker users
+     * @return set of active users
+     */
+    public synchronized Set<User> getUsers() {
+        return serverDataBase.getUsers();
+    }
+
+    /**
      * Listens connections
      */
     private void handle() {

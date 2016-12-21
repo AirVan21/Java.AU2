@@ -3,6 +3,7 @@ package ru.spbau.javacourse.torrent.database;
 import com.mongodb.MongoClient;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Morphia;
+import org.mongodb.morphia.query.UpdateOperations;
 import ru.spbau.javacourse.torrent.database.enity.ClientFileRecord;
 
 import java.util.List;
@@ -22,10 +23,6 @@ public class ClientDataBase {
         datastore.save(record);
     }
 
-    public void publishFileRecord(ClientFileRecord record) {
-
-    }
-
     public <T> List<ClientFileRecord> getFileRecords(String fieldName, T value) {
         return datastore
                 .find(ClientFileRecord.class)
@@ -35,7 +32,10 @@ public class ClientDataBase {
     }
 
     public <T> void updateFileRecord(ClientFileRecord record, String fieldName, T value) {
-
+        UpdateOperations<ClientFileRecord> update = datastore
+                .createUpdateOperations(ClientFileRecord.class)
+                .set(fieldName, value);
+        datastore.update(record, update);
     }
 
     public List<ClientFileRecord> getPublishedSharedFiles() {

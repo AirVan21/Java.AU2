@@ -36,6 +36,8 @@ public class HandleTask implements Runnable {
      */
     @Override
     public void run() {
+        log.log(Level.INFO, "Started HandleTask");
+
         try {
             while (!taskSocket.isClosed()) {
                 final byte requestId = input.readByte();
@@ -43,6 +45,7 @@ public class HandleTask implements Runnable {
             }
         }
         catch (IOException e) {
+
         } finally {
             try {
                 taskSocket.close();
@@ -53,11 +56,13 @@ public class HandleTask implements Runnable {
     }
 
     /**
-     * Chooses between LIST and GET requests and executes
+     * Chooses between requests and executes
      * @param requestId id of request
      * @throws IOException
      */
     private void executeRequest(byte requestId) throws IOException {
+        log.log(Level.INFO, "Executes request = " + Byte.toString(requestId));
+
         final Optional<String> host = getHostFromAddress(taskSocket.getRemoteSocketAddress().toString());
         if (!host.isPresent()) {
             return;
@@ -68,15 +73,17 @@ public class HandleTask implements Runnable {
             case TorrentRequest.GET_SOURCES_REQUEST:
                 break;
             case TorrentRequest.GET_UPDATE_REQUEST:
-                int port = input.readInt();
+                short port = input.readShort();
                 Set<Integer> fileIds = ClientServerProtocol.receiveUpdateFromClient(input);
                 tracker.addUserInformation(new User(host.get(), port), fileIds);
                 output.writeBoolean(true);
+                output.flush();
                 break;
             case TorrentRequest.GET_UPLOAD_REQUEST:
                 ServerFileRecord record = ClientServerProtocol.receiveUploadFromServer(input, host.get());
                 tracker.addServerFileRecord(record);
                 output.writeInt(record.hashCode());
+                output.flush();
                 break;
             default:
                 taskSocket.close();

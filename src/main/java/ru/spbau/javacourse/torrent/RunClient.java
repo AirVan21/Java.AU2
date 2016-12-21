@@ -52,7 +52,13 @@ public class RunClient {
                             System.out.println(command);
                             break;
                         case "add":
-                            System.out.println(command);
+                            if (input.length < 2) {
+                                System.out.println("Invalid add command format!");
+                                System.out.println(getHelp());
+                                continue;
+                            }
+                            final String path = input[1];
+                            client.doUpload(path);
                             break;
                         case "get":
                             System.out.println(command);

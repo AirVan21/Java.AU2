@@ -18,4 +18,8 @@ public class ServerDataBase {
     public synchronized void addFileRecord(ServerFileRecord record) {
         records.add(record);
     }
+
+    public synchronized Set<User> getUsers() {
+        return userToIdsMapping.keySet();
+    }
 }
