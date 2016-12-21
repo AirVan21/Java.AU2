@@ -4,6 +4,7 @@ import ru.spbau.javacourse.torrent.database.enity.ServerFileRecord;
 import ru.spbau.javacourse.torrent.database.enity.User;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class ServerDataBase {
     private final Map<User, Set<Integer>> userToIdsMapping = new HashMap<>();
@@ -25,6 +26,19 @@ public class ServerDataBase {
 
     public synchronized Set<User> getUsers() {
         return userToIdsMapping.keySet();
+    }
+
+    public synchronized Set<ServerFileRecord> getRecords() {
+        return records;
+    }
+
+    public synchronized Set<User> getSeeds(int fileId) {
+        return userToIdsMapping
+                .entrySet()
+                .stream()
+                .filter(item -> item.getValue().contains(fileId))
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toSet());
     }
 
     public synchronized void close() {

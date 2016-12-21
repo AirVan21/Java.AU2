@@ -132,6 +132,10 @@ public class Client {
         }
     }
 
+    public synchronized <T> List<ClientFileRecord> getFileRecords(String fieldName, T value) {
+        return browser.getClientFileRecords(fieldName, value);
+    }
+
     /**
      * Schedules Update requests to server
      */

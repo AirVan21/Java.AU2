@@ -72,6 +72,23 @@ public class Tracker {
     }
 
     /**
+     * Returns active tracker files
+     * @return set of available files
+     */
+    public synchronized Set<ServerFileRecord> getServerFileRecords() {
+        return serverDataBase.getRecords();
+    }
+
+    /**
+     * Returns users who have file
+     * @param fileIds - id of file
+     * @return set of seeds
+     */
+    public synchronized Set<User> getSeeds(int fileIds) {
+        return serverDataBase.getSeeds(fileIds);
+    }
+
+    /**
      * Listens connections
      */
     private void handle() {

@@ -3,10 +3,12 @@ package ru.spbau.javacourse.torrent.client;
 import lombok.extern.java.Log;
 import ru.spbau.javacourse.torrent.database.ClientDataBase;
 import ru.spbau.javacourse.torrent.database.enity.ClientFileRecord;
+import ru.spbau.javacourse.torrent.database.enity.ServerFileRecord;
 import ru.spbau.javacourse.torrent.utils.GlobalConstants;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 
 /**
@@ -40,5 +42,9 @@ public class FileBrowser {
         final ClientFileRecord targetRecord = records.get(0);
         db.updateFileRecord(targetRecord, "fileServerId", fileId);
         db.updateFileRecord(targetRecord, "isPublished", true);
+    }
+
+    public <T> List<ClientFileRecord> getClientFileRecords(String fieldName, T value) {
+        return db.getFileRecords(fieldName, value);
     }
 }

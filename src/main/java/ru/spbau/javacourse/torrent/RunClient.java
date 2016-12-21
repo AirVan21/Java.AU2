@@ -1,9 +1,12 @@
 package ru.spbau.javacourse.torrent;
 
 import ru.spbau.javacourse.torrent.client.Client;
+import ru.spbau.javacourse.torrent.database.enity.SimpleFileRecord;
 import ru.spbau.javacourse.torrent.utils.GlobalConstants;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
 import java.util.Scanner;
 
 /**
@@ -13,10 +16,10 @@ public class RunClient {
 
     private static String getHelp() {
         final StringBuilder sb = new StringBuilder();
-        sb.append("Usage:").append("\n");
-        sb.append("list |");
-        sb.append("add <file path> |");
-        sb.append("get <file id> |");
+        sb.append("Usage: ");
+        sb.append("list | ");
+        sb.append("add <file path> | ");
+        sb.append("get <file id> | ");
         sb.append("exit");
 
         return sb.toString();
@@ -52,7 +55,17 @@ public class RunClient {
                 try {
                     switch (command) {
                         case "list":
-                            System.out.println(command);
+                            Optional<List<SimpleFileRecord>> result = client.doList();
+                            if (result.isPresent()) {
+                                final StringBuilder sb = new StringBuilder();
+                                for (SimpleFileRecord record : result.get()) {
+                                    sb.append(record.getId()).append(" : ");
+                                    sb.append(record.getName()).append(" (size = ").append(record.getSize()).append(" bytes)");
+                                }
+                                System.out.println(sb.toString());
+                            } else {
+                                System.out.println("list command failed!");
+                            }
                             break;
                         case "add":
                             if (input.length < 2) {
@@ -64,10 +77,14 @@ public class RunClient {
                             client.doUpload(path);
                             break;
                         case "get":
-                            System.out.println(command);
+                            if (input.length < 2) {
+                                System.out.println("Invalid get command format!");
+                                System.out.println(getHelp());
+                                continue;
+                            }
+                            final int fileId = Integer.parseInt(input[1]);
                             break;
                         case "exit":
-                            System.out.println(command);
                             client.disconnectFromServer();
                             return;
                         default:
