@@ -137,6 +137,14 @@ public class Client {
         }
     }
 
+    public synchronized void doGet(int fileId) {
+        log.log(Level.INFO, "Get command!");
+    }
+
+    public synchronized void doStat(int fileId) {
+        log.log(Level.INFO, "Stat command!");
+    }
+
     public synchronized <T> List<ClientFileRecord> getFileRecords(String fieldName, T value) {
         return browser.getClientFileRecords(fieldName, value);
     }
@@ -158,4 +166,9 @@ public class Client {
                 , 0               // delay (in milliseconds)
                 , 5 * 60 * 1000); // period (in milliseconds)
     }
+
+    private synchronized void doPartGet(int fileId, int part) {
+        log.log(Level.INFO, "PartGet command!");
+    }
+
 }

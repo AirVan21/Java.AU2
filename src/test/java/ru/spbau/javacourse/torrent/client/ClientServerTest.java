@@ -23,7 +23,7 @@ import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
-public class ClientTest {
+public class ClientServerTest {
     private final static String HOST_NAME = "127.0.0.1";
     private final static String TEST_FILE_FST = "test_file_fst";
     private final static String TEST_FILE_SND = "test_file_snd";
