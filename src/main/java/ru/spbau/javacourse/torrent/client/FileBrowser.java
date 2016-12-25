@@ -47,4 +47,12 @@ public class FileBrowser {
     public <T> List<ClientFileRecord> getClientFileRecords(String fieldName, T value) {
         return db.getFileRecords(fieldName, value);
     }
+
+    public void dropDatabase() {
+        db.dropDatabase();
+    }
+
+    public void dropCollection(Class source) {
+        db.dropCollection(source);
+    }
 }

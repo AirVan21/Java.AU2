@@ -45,4 +45,12 @@ public class ClientDataBase {
                 .equal(true)
                 .asList();
     }
+
+    public void dropDatabase() {
+        datastore.getDB().dropDatabase();
+    }
+
+    public void dropCollection(Class source) {
+        datastore.getCollection(source).drop();
+    }
 }

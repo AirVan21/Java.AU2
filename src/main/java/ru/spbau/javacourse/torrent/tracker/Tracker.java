@@ -3,48 +3,19 @@ package ru.spbau.javacourse.torrent.tracker;
 import ru.spbau.javacourse.torrent.database.ServerDataBase;
 import ru.spbau.javacourse.torrent.database.enity.ServerFileRecord;
 import ru.spbau.javacourse.torrent.database.enity.User;
+import ru.spbau.javacourse.torrent.tasks.HandleTrackerTask;
 import ru.spbau.javacourse.torrent.utils.GlobalConstants;
 
+
 import java.io.IOException;
-import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Set;
 
 /**
  * Tracker class
  */
-public class Tracker {
-    private ServerSocket socket;
-    private volatile boolean isStopped;
+public class Tracker extends Server {
     private final ServerDataBase serverDataBase = new ServerDataBase(GlobalConstants.SERVER_DB_DIR);
-
-    public  Tracker() {}
-
-    public synchronized void start(int port) throws IOException {
-        if (socket != null) {
-            return;
-        }
-
-        socket = new ServerSocket(port);
-        isStopped = false;
-        new Thread(this::handle).start();
-    }
-
-    /**
-     * Stops server
-     * @throws IOException
-     * @throws InterruptedException
-     */
-    public synchronized void stop() throws IOException, InterruptedException {
-        if (socket == null) {
-            return;
-        }
-
-        isStopped = true;
-        socket.close();
-        serverDataBase.close();
-        wait();
-    }
 
     /**
      * Adds user update information to ServerDataBase
@@ -88,26 +59,8 @@ public class Tracker {
         return serverDataBase.getSeeds(fileIds);
     }
 
-    /**
-     * Listens connections
-     */
-    private void handle() {
-        while (!isStopped && !socket.isClosed()) {
-            try {
-                acceptTask();
-            } catch (IOException e) {
-            }
-            synchronized (this) {
-                notify();
-            }
-        }
-    }
-
-    /**
-     * Accepts connection to server socket
-     * @throws IOException
-     */
-    private void acceptTask() throws IOException {
+    @Override
+    protected void acceptTask() throws IOException {
         final Socket connection;
         try {
             connection = socket.accept();
@@ -115,7 +68,7 @@ public class Tracker {
             return;
         }
 
-        final HandleTask task = new HandleTask(this, connection);
+        final HandleTrackerTask task = new HandleTrackerTask(this, connection);
         new Thread(task).start();
     }
 }

@@ -12,6 +12,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.*;
 import java.util.logging.Level;
@@ -21,16 +22,17 @@ import java.util.logging.Level;
  */
 @Log
 public class Client {
-    private final String hostName;
+    private final String serverName;
     private final short port;
     private Socket socket;
     private DataInputStream input;
     private DataOutputStream output;
+    private final LocalServer localServer = new LocalServer();
     private final Timer timer = new Timer();
     private final FileBrowser browser = new FileBrowser(GlobalConstants.DOWNLOAD_DIR);
 
-    public Client(String hostName, short port) {
-        this.hostName = hostName;
+    public Client(String serverName, short port) {
+        this.serverName = serverName;
         this.port = port;
     }
 
@@ -44,9 +46,10 @@ public class Client {
         if (socket != null) {
             return;
         }
-        socket = new Socket(hostName, GlobalConstants.TRACKER_PORT);
+        socket = new Socket(serverName, GlobalConstants.TRACKER_PORT);
         input = new DataInputStream(socket.getInputStream());
         output = new DataOutputStream(socket.getOutputStream());
+        localServer.start(port);
         subscribe();
     }
 
@@ -54,7 +57,7 @@ public class Client {
      * Closes connection
      * @throws IOException
      */
-    public synchronized void disconnectFromServer() throws IOException {
+    public synchronized void disconnectFromServer() throws IOException, InterruptedException {
         log.log(Level.INFO, "Disconnects from server");
 
         if (socket == null) {
@@ -62,6 +65,7 @@ public class Client {
         }
         timer.cancel();
         socket.close();
+        localServer.stop();
     }
 
     public synchronized Optional<List<SimpleFileRecord>> doList() {
@@ -126,6 +130,7 @@ public class Client {
             ClientServerProtocol.sendUploadToServer(output, file.getAbsolutePath(), file.length());
             int fileId = ClientServerProtocol.receiveUploadResponseFromServer(input);
             browser.publishLocalFile(file.getAbsolutePath(), fileId);
+            doUpdate();
         } catch (IOException e) {
             log.log(Level.WARNING, "Couldn't sent upload to server");
             log.log(Level.WARNING, e.getMessage());
@@ -134,6 +139,10 @@ public class Client {
 
     public synchronized <T> List<ClientFileRecord> getFileRecords(String fieldName, T value) {
         return browser.getClientFileRecords(fieldName, value);
+    }
+
+    public synchronized void clearFileRecords() {
+        browser.dropCollection(ClientFileRecord.class);
     }
 
     /**
@@ -146,7 +155,7 @@ public class Client {
                 doUpdate();
             }
         } // task
-                , 60 * 1000       // delay (in milliseconds)
+                , 0               // delay (in milliseconds)
                 , 5 * 60 * 1000); // period (in milliseconds)
     }
 }

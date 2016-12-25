@@ -6,20 +6,27 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 import org.junit.rules.TemporaryFolder;
+import ru.spbau.javacourse.torrent.database.enity.ClientFileRecord;
 import ru.spbau.javacourse.torrent.database.enity.ServerFileRecord;
+import ru.spbau.javacourse.torrent.database.enity.SimpleFileRecord;
 import ru.spbau.javacourse.torrent.database.enity.User;
 import ru.spbau.javacourse.torrent.tracker.Tracker;
 import ru.spbau.javacourse.torrent.utils.GlobalConstants;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
 
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
 public class ClientTest {
-    private final static String HOST_NAME = "localhost";
+    private final static String HOST_NAME = "127.0.0.1";
+    private final static String TEST_FILE_FST = "test_file_fst";
+    private final static String TEST_FILE_SND = "test_file_snd";
     private final static short SERVER_PORT = GlobalConstants.TRACKER_PORT;
 
     @Rule
@@ -32,13 +39,10 @@ public class ClientTest {
 
     @Test
     public void connectToServer() throws Exception {
-        final Tracker tracker = new Tracker();
-        Tracker spyTracker = spy(tracker);
+        Tracker spyTracker = spy(new Tracker());
         spyTracker.start(SERVER_PORT);
 
-        final Client client = new Client(HOST_NAME, GlobalConstants.CLIENT_PORT_FST);
-        Client spyClient = spy(client);
-        spyClient.connectToServer();
+        final Client spyClient = runSpyClient (HOST_NAME, GlobalConstants.CLIENT_PORT_FST);
 
         spyClient.disconnectFromServer();
         spyTracker.stop();
@@ -51,21 +55,18 @@ public class ClientTest {
 
     @Test
     public void doUpdate() throws Exception {
-        final Tracker tracker = new Tracker();
-        Tracker spyTracker = spy(tracker);
+        Tracker spyTracker = spy(new Tracker());
         spyTracker.start(SERVER_PORT);
 
-        final Client client = new Client(HOST_NAME, GlobalConstants.CLIENT_PORT_FST);
-        Client spyClient = spy(client);
-        spyClient.connectToServer();
-        spyClient.doUpdate();
+        // Create client and run simple update
+        Client spyClient = runSpyClient(HOST_NAME, GlobalConstants.CLIENT_PORT_FST);
+        // doUpdate is done by timer
 
         spyClient.disconnectFromServer();
         spyTracker.stop();
 
+        // Checks that  update was called
         verify(spyClient).doUpdate();
-        verify(spyTracker).addUserInformation(any(User.class), anySetOf(Integer.class));
-        assertEquals(1, spyTracker.getUsers().size());
     }
 
     @Test
@@ -74,25 +75,115 @@ public class ClientTest {
         Tracker spyTracker = spy(tracker);
         spyTracker.start(SERVER_PORT);
 
-        final Client client = new Client(HOST_NAME, GlobalConstants.CLIENT_PORT_FST);
-        Client spyClient = spy(client);
-        spyClient.connectToServer();
+        Client spyClient = runSpyClient(HOST_NAME, GlobalConstants.CLIENT_PORT_FST);
 
-        final File file = temporaryWorkDir.newFile("TestFile");
+        // Creates and uploads file
+        final File file = createTemporaryFile(TEST_FILE_FST);
+        spyClient.doUpload(file.getAbsolutePath());
+
+        // Checks that file was written to databases
+        assertEquals(1, spyClient.getFileRecords("fileName", file.getAbsolutePath()).size());
+        assertEquals(1, spyTracker.getServerFileRecords().size());
+
+        spyClient.disconnectFromServer();
+        spyTracker.stop();
+
+        // Checks calls
+        verify(spyClient).doUpload(file.getAbsolutePath());
+        verify(spyTracker).addServerFileRecord(any(ServerFileRecord.class));
+    }
+
+    @Test
+    public void doList() throws Exception {
+        Tracker spyTracker = spy(new Tracker());
+        spyTracker.start(SERVER_PORT);
+
+        // Creates first client
+        Client spyClientFst = runSpyClient(HOST_NAME, GlobalConstants.CLIENT_PORT_FST);
+
+        // Creates second client
+        Client spyClientSnd = runSpyClient(HOST_NAME, GlobalConstants.CLIENT_PORT_SND);
+
+        // First client uploads file
+        final File file = createTemporaryFile(TEST_FILE_FST);
+        spyClientFst.doUpload(file.getAbsolutePath());
+
+        // Second client asks List()
+        Optional<List<SimpleFileRecord>> answer = spyClientSnd.doList();
+
+        // Check that uploaded file is visible for second client
+        assertTrue(answer.isPresent());
+        assertEquals(1, answer.get().size());
+        SimpleFileRecord loadedRecord = answer.get().get(0);
+        assertEquals(file.getAbsolutePath(), loadedRecord.getName());
+        assertEquals(file.length(), loadedRecord.getSize());
+
+        // Check that local id matches with downloaded info id
+        List<ClientFileRecord> localRecords = spyClientFst.getFileRecords("fileName", file.getAbsolutePath());
+        assertEquals(1, localRecords.size());
+        assertEquals(file.getAbsolutePath(), localRecords.get(0).getFileName());
+        assertEquals(file.length(), localRecords.get(0).getFileSize());
+
+        // Compares ids
+        assertEquals(localRecords.get(0).getFileServerId(), loadedRecord.getId());
+
+        // Stops all
+        spyClientFst.disconnectFromServer();
+        spyClientSnd.disconnectFromServer();
+        spyTracker.stop();
+    }
+
+    @Test
+    public void doSources() throws Exception {
+        Tracker spyTracker = spy(new Tracker());
+        spyTracker.start(SERVER_PORT);
+
+        // Creates first client
+        Client spyClientFst = runSpyClient(HOST_NAME, GlobalConstants.CLIENT_PORT_FST);
+
+        // Creates second client
+        Client spyClientSnd = runSpyClient(HOST_NAME, GlobalConstants.CLIENT_PORT_SND);
+
+        // First client uploads file
+        final File file = createTemporaryFile(TEST_FILE_FST);
+        spyClientFst.doUpload(file.getAbsolutePath());
+
+        // Second client asks List()
+        Optional<List<SimpleFileRecord>> answer = spyClientSnd.doList();
+        assertEquals(1, answer.get().size());
+        SimpleFileRecord loadedRecord = answer.get().get(0);
+
+        // Asks user who has file
+        Optional<List<User>> seeds = spyClientSnd.doSources(loadedRecord.getId());
+        assertTrue(seeds.isPresent());
+        assertEquals(1, seeds.get().size());
+        User user = seeds.get().get(0);
+
+        assertEquals(HOST_NAME, user.getHost());
+        assertEquals(GlobalConstants.CLIENT_PORT_FST, user.getPort());
+
+        // Stops all
+        spyClientFst.disconnectFromServer();
+        spyClientSnd.disconnectFromServer();
+        spyTracker.stop();
+    }
+
+    private File createTemporaryFile(String fileName) throws IOException {
+        final File file = temporaryWorkDir.newFile(fileName);
         final FileOutputStream stream = new FileOutputStream(file);
         byte[] buffer = new byte[128];
         stream.write(buffer);
         stream.flush();
         stream.close();
 
-        spyClient.doUpload(file.getAbsolutePath());
+        return file;
+    }
 
-        spyClient.disconnectFromServer();
-        spyTracker.stop();
+    private Client runSpyClient(String host, short port) throws IOException {
+        Client spyClientSnd = spy(new Client(host, port));
+        spyClientSnd.clearFileRecords();
+        spyClientSnd.connectToServer();
 
-        verify(spyClient).doUpload(file.getAbsolutePath());
-        verify(spyTracker).addServerFileRecord(any(ServerFileRecord.class));
-        assertEquals(1, spyClient.getFileRecords("fileName", file.getAbsolutePath()).size());
-        assertEquals(1, spyTracker.getServerFileRecords().size());
+        return spyClientSnd;
     }
 }
