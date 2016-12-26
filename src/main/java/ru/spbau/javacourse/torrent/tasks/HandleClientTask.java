@@ -1,6 +1,7 @@
 package ru.spbau.javacourse.torrent.tasks;
 
 import lombok.extern.java.Log;
+import ru.spbau.javacourse.torrent.commands.ClientRequest;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -16,5 +17,12 @@ public class HandleClientTask extends HandleTask {
     @Override
     protected void executeRequest(byte requestId) throws IOException {
         log.log(Level.INFO, "Executes request = " + Byte.toString(requestId));
+
+        switch (requestId) {
+            case ClientRequest.GET_STAT_REQUEST:
+                break;
+            case ClientRequest.GET_FILE_REQUEST:
+                break;
+        }
     }
 }

@@ -29,7 +29,7 @@ public class FileBrowser {
 
     public void addLocalFile(String pathToFile, long fileSize) {
         final boolean isPublished = false;
-        db.saveFileRecord(new ClientFileRecord(pathToFile, fileSize, new ArrayList<>(), isPublished));
+        db.saveFileRecord(new ClientFileRecord(pathToFile, fileSize, DownloadManager.getFileChunks(pathToFile), isPublished));
     }
 
     public void publishLocalFile(String pathToFile, int fileId) {

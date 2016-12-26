@@ -18,7 +18,7 @@ public class ClientFileRecord {
     private long fileSize;
     private boolean isPublished = false;
     private int fileServerId;
-    private List<Boolean> emptyChunks = new ArrayList<>();
+    private List<Integer> availableChunks = new ArrayList<>();
 
     /**
      * Empty Constructor for Mongo DB
@@ -29,13 +29,13 @@ public class ClientFileRecord {
      * File Record constructor
      * @param fileName - name of the file
      * @param fileSize - size of the file
-     * @param emptyChunks - ids of chunks which are empty
+     * @param availableChunks - ids of chunks which are empty
      * @param isPublished - flag, true is file is available for downloading (false otherwise)
      */
-    public ClientFileRecord(String fileName, long fileSize, List<Boolean> emptyChunks, boolean isPublished) {
+    public ClientFileRecord(String fileName, long fileSize, List<Integer> availableChunks, boolean isPublished) {
         this.fileName = fileName;
         this.fileSize = fileSize;
-        this.emptyChunks = emptyChunks;
+        this.availableChunks = availableChunks;
         this.isPublished = isPublished;
     }
 
@@ -67,7 +67,7 @@ public class ClientFileRecord {
         this.fileServerId = fileServerId;
     }
 
-    public List<Boolean> getEmptyChunks() {
-        return emptyChunks;
+    public List<Integer> getAvailableChunks() {
+        return availableChunks;
     }
 }

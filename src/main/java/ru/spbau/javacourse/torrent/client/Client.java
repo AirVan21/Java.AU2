@@ -5,6 +5,7 @@ import lombok.extern.java.Log;
 import ru.spbau.javacourse.torrent.database.enity.ClientFileRecord;
 import ru.spbau.javacourse.torrent.database.enity.SimpleFileRecord;
 import ru.spbau.javacourse.torrent.database.enity.User;
+import ru.spbau.javacourse.torrent.protocol.ClientClientProtocol;
 import ru.spbau.javacourse.torrent.protocol.ClientServerProtocol;
 import ru.spbau.javacourse.torrent.utils.GlobalConstants;
 
@@ -12,7 +13,6 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.*;
 import java.util.logging.Level;
@@ -141,8 +141,23 @@ public class Client {
         log.log(Level.INFO, "Get command!");
     }
 
-    public synchronized void doStat(int fileId) {
+    public synchronized Optional<Map<User, List<Integer>>> doStat(int fileId) {
         log.log(Level.INFO, "Stat command!");
+
+        final Optional<List<User>> seeds = doSources(fileId);
+        if (!seeds.isPresent()) {
+            return Optional.empty();
+        }
+        
+        final Map<User, List<Integer>> portToChunks = new HashMap<>();
+        for (User user : seeds.get()) {
+            final List<Integer> chunks = DownloadManager.doHostStat(fileId, user.getPort());
+            if (!chunks.isEmpty()) {
+                portToChunks.put(user, chunks);
+            }
+        }
+
+        return Optional.of(portToChunks);
     }
 
     public synchronized <T> List<ClientFileRecord> getFileRecords(String fieldName, T value) {
@@ -166,9 +181,4 @@ public class Client {
                 , 0               // delay (in milliseconds)
                 , 5 * 60 * 1000); // period (in milliseconds)
     }
-
-    private synchronized void doPartGet(int fileId, int part) {
-        log.log(Level.INFO, "PartGet command!");
-    }
-
 }
