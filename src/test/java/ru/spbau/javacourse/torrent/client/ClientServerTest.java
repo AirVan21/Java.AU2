@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.mockito.Matchers.*;
@@ -38,7 +39,7 @@ public class ClientServerTest {
     }
 
     @Test
-    public void connectToServer() throws Exception {
+    public void connectToServerTest() throws Exception {
         Tracker spyTracker = spy(new Tracker());
         spyTracker.start(SERVER_PORT);
 
@@ -54,7 +55,7 @@ public class ClientServerTest {
     }
 
     @Test
-    public void doUpdate() throws Exception {
+    public void doUpdateTest() throws Exception {
         Tracker spyTracker = spy(new Tracker());
         spyTracker.start(SERVER_PORT);
 
@@ -70,7 +71,7 @@ public class ClientServerTest {
     }
 
     @Test
-    public void doUpload() throws Exception {
+    public void doUploadTest() throws Exception {
         final Tracker tracker = new Tracker();
         Tracker spyTracker = spy(tracker);
         spyTracker.start(SERVER_PORT);
@@ -94,7 +95,7 @@ public class ClientServerTest {
     }
 
     @Test
-    public void doList() throws Exception {
+    public void doListTest() throws Exception {
         Tracker spyTracker = spy(new Tracker());
         spyTracker.start(SERVER_PORT);
 
@@ -134,7 +135,8 @@ public class ClientServerTest {
     }
 
     @Test
-    public void doSources() throws Exception {
+    public void doSourcesTest() throws Exception {
+        // Creates tracker
         Tracker spyTracker = spy(new Tracker());
         spyTracker.start(SERVER_PORT);
 
@@ -168,10 +170,51 @@ public class ClientServerTest {
         spyTracker.stop();
     }
 
+    @Test
+    public void doStatTest() throws IOException, InterruptedException {
+        // Creates tracker
+        Tracker spyTracker = spy(new Tracker());
+        spyTracker.start(SERVER_PORT);
+
+        // Creates first client
+        Client spyClientFst = runSpyClient(HOST_NAME, GlobalConstants.CLIENT_PORT_FST);
+
+        // Creates second client
+        Client spyClientSnd = runSpyClient(HOST_NAME, GlobalConstants.CLIENT_PORT_SND);
+
+        // First client uploads file
+        final File file = createTemporaryFile(TEST_FILE_FST);
+        spyClientFst.doUpload(file.getAbsolutePath());
+
+        // Second client asks List()
+        Optional<List<SimpleFileRecord>> answer = spyClientSnd.doList();
+        assertEquals(1, answer.get().size());
+        SimpleFileRecord loadedRecord = answer.get().get(0);
+
+        Optional<Map<User, List<Integer>>> stat = spyClientSnd.doStat(loadedRecord.getId());
+        assertTrue(stat.isPresent());
+        assertEquals(1, stat.get().size());
+        User user = stat.get().entrySet().stream()
+                .findFirst().get().getKey();
+        List<Integer> chunks = stat.get().entrySet().stream()
+                .findFirst().get().getValue();
+
+        // Validate user and chunks
+        assertEquals(GlobalConstants.CLIENT_PORT_FST, user.getPort());
+        assertEquals(file.length() / GlobalConstants.CHUNK_SIZE, chunks.size());
+        assertTrue(chunks.contains(0));
+        assertTrue(chunks.contains(4));
+
+        // Stops all
+        spyClientFst.disconnectFromServer();
+        spyClientSnd.disconnectFromServer();
+        spyTracker.stop();
+    }
+
     private File createTemporaryFile(String fileName) throws IOException {
         final File file = temporaryWorkDir.newFile(fileName);
         final FileOutputStream stream = new FileOutputStream(file);
-        byte[] buffer = new byte[128];
+        byte[] buffer = new byte[(int) GlobalConstants.CHUNK_SIZE * 5];
         stream.write(buffer);
         stream.flush();
         stream.close();

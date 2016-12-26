@@ -27,9 +27,9 @@ public class Client {
     private Socket socket;
     private DataInputStream input;
     private DataOutputStream output;
-    private final LocalServer localServer = new LocalServer();
     private final Timer timer = new Timer();
     private final FileBrowser browser = new FileBrowser(GlobalConstants.DOWNLOAD_DIR);
+    private final LocalServer localServer = new LocalServer(browser);
 
     public Client(String serverName, short port) {
         this.serverName = serverName;
@@ -148,7 +148,7 @@ public class Client {
         if (!seeds.isPresent()) {
             return Optional.empty();
         }
-        
+
         final Map<User, List<Integer>> portToChunks = new HashMap<>();
         for (User user : seeds.get()) {
             final List<Integer> chunks = DownloadManager.doHostStat(fileId, user.getPort());
