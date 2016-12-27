@@ -32,11 +32,12 @@ public class ClientFileRecord {
      * @param availableChunks - ids of chunks which are empty
      * @param isPublished - flag, true is file is available for downloading (false otherwise)
      */
-    public ClientFileRecord(String fileName, long fileSize, List<Integer> availableChunks, boolean isPublished) {
+    public ClientFileRecord(String fileName, long fileSize, List<Integer> availableChunks, boolean isPublished, int fileServerId) {
         this.fileName = fileName;
         this.fileSize = fileSize;
         this.availableChunks = availableChunks;
         this.isPublished = isPublished;
+        this.fileServerId = fileServerId;
     }
 
     public ObjectId getId() {

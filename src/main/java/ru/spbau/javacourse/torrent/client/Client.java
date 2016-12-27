@@ -5,7 +5,6 @@ import lombok.extern.java.Log;
 import ru.spbau.javacourse.torrent.database.enity.ClientFileRecord;
 import ru.spbau.javacourse.torrent.database.enity.SimpleFileRecord;
 import ru.spbau.javacourse.torrent.database.enity.User;
-import ru.spbau.javacourse.torrent.protocol.ClientClientProtocol;
 import ru.spbau.javacourse.torrent.protocol.ClientServerProtocol;
 import ru.spbau.javacourse.torrent.utils.GlobalConstants;
 
@@ -28,7 +27,7 @@ public class Client {
     private DataInputStream input;
     private DataOutputStream output;
     private final Timer timer = new Timer();
-    private final FileBrowser browser = new FileBrowser(GlobalConstants.DOWNLOAD_DIR);
+    private final FileBrowser browser = new FileBrowser();
     private final LocalServer localServer = new LocalServer(browser);
 
     public Client(String serverName, short port) {
@@ -139,6 +138,19 @@ public class Client {
 
     public synchronized void doGet(int fileId) {
         log.log(Level.INFO, "Get command!");
+
+        final Optional<List<SimpleFileRecord>> records = doList();
+        if (!records.isPresent()) {
+            return;
+        }
+
+        final SimpleFileRecord record = records.get().stream().findFirst().get();
+        browser.addFutureFile(record);
+        Optional<Map<User, List<Integer>>> stat = doStat(fileId);
+        if (!stat.isPresent()) {
+            return;
+        }
+        final Map<User, List<Integer>> schedule = DownloadManager.createSchedule(stat.get());
     }
 
     public synchronized Optional<Map<User, List<Integer>>> doStat(int fileId) {

@@ -4,6 +4,7 @@ import lombok.extern.java.Log;
 import ru.spbau.javacourse.torrent.database.ClientDataBase;
 import ru.spbau.javacourse.torrent.database.enity.ClientFileRecord;
 import ru.spbau.javacourse.torrent.database.enity.ServerFileRecord;
+import ru.spbau.javacourse.torrent.database.enity.SimpleFileRecord;
 import ru.spbau.javacourse.torrent.utils.GlobalConstants;
 
 import java.util.ArrayList;
@@ -17,23 +18,27 @@ import java.util.logging.Level;
 @Log
 public class FileBrowser {
     private final ClientDataBase db = new ClientDataBase(GlobalConstants.CLIENT_DB_NAME);
-    private final String downloadDirectory;
+    private static final int DEFAULT_FILE_SERVER_ID = 0;
 
-    public FileBrowser(String downloadDirectory) {
-        this.downloadDirectory = downloadDirectory;
-    }
+    public FileBrowser() {}
 
-    public List<ClientFileRecord> getPublishedFileRecords() {
-        return db.getPublishedSharedFiles();
-    }
+    public synchronized void addLocalFile(String pathToFile, long fileSize) {
+        log.log(Level.INFO, "addFutureFile: " + pathToFile);
 
-    public void addLocalFile(String pathToFile, long fileSize) {
         final boolean isPublished = false;
-        db.saveFileRecord(new ClientFileRecord(pathToFile, fileSize, DownloadManager.getFileChunks(pathToFile), isPublished));
+        db.saveFileRecord(new ClientFileRecord(pathToFile, fileSize, makeFileChunks(fileSize), isPublished, DEFAULT_FILE_SERVER_ID));
     }
 
-    public void publishLocalFile(String pathToFile, int fileId) {
+    public synchronized void addFutureFile(SimpleFileRecord record) {
+        log.log(Level.INFO, "addFutureFile: " + record.getName());
+
+        final boolean isPublished = false;
+        db.saveFileRecord(new ClientFileRecord(record.getName(), record.getSize(), new ArrayList<>(), isPublished, DEFAULT_FILE_SERVER_ID));
+    }
+
+    public synchronized void publishLocalFile(String pathToFile, int fileId) {
         log.log(Level.INFO, "publish " + pathToFile + "with id = " + Integer.toString(fileId));
+
         final List<ClientFileRecord> records = db.getFileRecords("fileName", pathToFile);
         if (records.size() != 1) {
             log.log(Level.WARNING, "Database has collision!");
@@ -48,11 +53,27 @@ public class FileBrowser {
         return db.getFileRecords(fieldName, value);
     }
 
+    public List<ClientFileRecord> getPublishedFileRecords() {
+        return db.getPublishedSharedFiles();
+    }
+
     public void dropDatabase() {
         db.dropDatabase();
     }
 
     public void dropCollection(Class source) {
         db.dropCollection(source);
+    }
+
+    private static List<Integer> makeFileChunks(long fileSize) {
+        final List<Integer> chunks = new ArrayList<>();
+        long amountOfChunks = (fileSize % GlobalConstants.CHUNK_SIZE == 0)
+                ? fileSize / GlobalConstants.CHUNK_SIZE
+                : fileSize / GlobalConstants.CHUNK_SIZE + 1;
+        for (int i = 0; i < amountOfChunks; ++i) {
+            chunks.add(i);
+        }
+
+        return chunks;
     }
 }

@@ -1,16 +1,15 @@
 package ru.spbau.javacourse.torrent.client;
 
 import lombok.extern.java.Log;
+import ru.spbau.javacourse.torrent.database.enity.User;
 import ru.spbau.javacourse.torrent.protocol.ClientClientProtocol;
 import ru.spbau.javacourse.torrent.utils.GlobalConstants;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Level;
 
 /**
@@ -18,12 +17,9 @@ import java.util.logging.Level;
  */
 @Log
 public class DownloadManager {
+    private String DOWNLOAD_DIR = GlobalConstants.DOWNLOAD_DIR;
 
-    private static synchronized void doPartGet(int fileId, int part) {
-        log.log(Level.INFO, "PartGet command!");
-    }
-
-    public static List<Integer> doHostStat(int fileId, int port) {
+    public static synchronized List<Integer> doHostStat(int fileId, short port) {
         log.log(Level.INFO, "HostStat command!");
 
         List<Integer> result = new ArrayList<>();
@@ -41,29 +37,45 @@ public class DownloadManager {
         return result;
     }
 
-    public static synchronized void writeFileChunk(String pathToFile, int chunkId, DataInputStream input) {
+    public static synchronized void doPartGet(int fileId, int part, short port) {
+        log.log(Level.INFO, "PartGet command!");
+    }
+
+    public static Map<User, List<Integer>> createSchedule(Map<User, List<Integer>> stat) {
+        final Map<User, List<Integer>> schedule = new HashMap<>();
+        final Set<Integer> scheduledChunks = new HashSet<>();
+        boolean wasTaken;
+        do {
+            // checks that is possible to add something
+            wasTaken = false;
+            for (Map.Entry<User, List<Integer>> seed : stat.entrySet()) {
+                Optional<Integer> chunk = seed.getValue().stream()
+                        .filter(item -> !scheduledChunks.contains(item))
+                        .findFirst();
+                //
+                if (chunk.isPresent()) {
+                    wasTaken = true;
+                    scheduledChunks.add(chunk.get());
+                    final List<Integer> target = schedule.get(seed.getKey());
+                    if (target == null) {
+                        List<Integer> list = new ArrayList<>();
+                        list.add(chunk.get());
+                        schedule.put(seed.getKey(), list);
+                    } else {
+                        target.add(chunk.get());
+                    }
+                }
+            }
+        } while (wasTaken);
+
+        return schedule;
+    }
+
+    private static synchronized void writeFileChunk(String pathToFile, int chunkId, DataInputStream input) {
 
     }
 
-    public static synchronized void readFileChunk(String pathToFile, int chunkId, DataOutputStream output) {
+    private static synchronized void readFileChunk(String pathToFile, int chunkId, DataOutputStream output) {
 
-    }
-
-    public static List<Integer> getFileChunks(String pathToFile) {
-        final List<Integer> chunks = new ArrayList<>();
-        final File file = new File(pathToFile);
-        if (!file.exists() || file.isDirectory()) {
-            // empty
-            return chunks;
-        }
-
-        long amountOfChunks = (file.length() % GlobalConstants.CHUNK_SIZE == 0)
-                            ? file.length() / GlobalConstants.CHUNK_SIZE
-                            : file.length() / GlobalConstants.CHUNK_SIZE + 1;
-        for (int i = 0; i < amountOfChunks; ++i) {
-            chunks.add(i);
-        }
-
-        return chunks;
     }
 }
