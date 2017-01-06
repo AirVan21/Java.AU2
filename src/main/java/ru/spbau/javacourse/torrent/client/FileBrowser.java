@@ -22,11 +22,11 @@ public class FileBrowser {
 
     public FileBrowser() {}
 
-    public synchronized void addLocalFile(String pathToFile, long fileSize) {
-        log.log(Level.INFO, "addFutureFile: " + pathToFile);
+    public synchronized void addLocalFile(String fileName, long fileSize) {
+        log.log(Level.INFO, "addFutureFile: " + fileName);
 
         final boolean isPublished = false;
-        db.saveFileRecord(new ClientFileRecord(pathToFile, fileSize, makeFileChunks(fileSize), isPublished, DEFAULT_FILE_SERVER_ID));
+        db.saveFileRecord(new ClientFileRecord(fileName, fileSize, makeFileChunks(fileSize), isPublished, DEFAULT_FILE_SERVER_ID));
     }
 
     public synchronized void addFutureFile(SimpleFileRecord record) {
@@ -36,10 +36,10 @@ public class FileBrowser {
         db.saveFileRecord(new ClientFileRecord(record.getName(), record.getSize(), new ArrayList<>(), isPublished, DEFAULT_FILE_SERVER_ID));
     }
 
-    public synchronized void publishLocalFile(String pathToFile, int fileId) {
-        log.log(Level.INFO, "publish " + pathToFile + "with id = " + Integer.toString(fileId));
+    public synchronized void publishLocalFile(String fileName, int fileId) {
+        log.log(Level.INFO, "publish " + fileName + "with id = " + Integer.toString(fileId));
 
-        final List<ClientFileRecord> records = db.getFileRecords("fileName", pathToFile);
+        final List<ClientFileRecord> records = db.getFileRecords("fileName", fileName);
         if (records.size() != 1) {
             log.log(Level.WARNING, "Database has collision!");
             return;

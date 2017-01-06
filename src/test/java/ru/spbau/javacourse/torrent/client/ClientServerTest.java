@@ -92,7 +92,7 @@ public class ClientServerTest {
         sleep(100);
 
         // Checks that file was written to databases
-        assertEquals(1, spyClient.getFileRecords("fileName", file.getAbsolutePath()).size());
+        assertEquals(1, spyClient.getFileRecords("fileName", file.getName()).size());
         assertEquals(1, spyTracker.getServerFileRecords().size());
 
         spyClient.disconnectFromServer();
@@ -128,13 +128,13 @@ public class ClientServerTest {
         assertTrue(answer.isPresent());
         assertEquals(1, answer.get().size());
         SimpleFileRecord loadedRecord = answer.get().get(0);
-        assertEquals(file.getAbsolutePath(), loadedRecord.getName());
+        assertEquals(file.getName(), loadedRecord.getName());
         assertEquals(file.length(), loadedRecord.getSize());
 
         // Check that local id matches with downloaded info id
-        List<ClientFileRecord> localRecords = spyClientFst.getFileRecords("fileName", file.getAbsolutePath());
+        List<ClientFileRecord> localRecords = spyClientFst.getFileRecords("fileName", file.getName());
         assertEquals(1, localRecords.size());
-        assertEquals(file.getAbsolutePath(), localRecords.get(0).getFileName());
+        assertEquals(file.getName(), localRecords.get(0).getFileName());
         assertEquals(file.length(), localRecords.get(0).getFileSize());
 
         // Compares ids
@@ -208,7 +208,7 @@ public class ClientServerTest {
         Optional<List<SimpleFileRecord>> answer = spyClientSnd.doList();
         assertEquals(1, answer.get().size());
         SimpleFileRecord loadedRecord = answer.get().get(0);
-        
+
         Optional<Map<User, List<Integer>>> stat = spyClientSnd.doStat(loadedRecord.getId());
         assertTrue(stat.isPresent());
         assertEquals(1, stat.get().size());

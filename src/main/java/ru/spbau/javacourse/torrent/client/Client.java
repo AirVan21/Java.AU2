@@ -124,11 +124,11 @@ public class Client {
             return;
         }
 
-        browser.addLocalFile(file.getAbsolutePath(), file.length());
+        browser.addLocalFile(file.getName(), file.length());
         try {
-            ClientServerProtocol.sendUploadToServer(output, file.getAbsolutePath(), file.length());
+            ClientServerProtocol.sendUploadToServer(output, file.getName(), file.length());
             int fileId = ClientServerProtocol.receiveUploadResponseFromServer(input);
-            browser.publishLocalFile(file.getAbsolutePath(), fileId);
+            browser.publishLocalFile(file.getName(), fileId);
             doUpdate();
         } catch (IOException e) {
             log.log(Level.WARNING, "Couldn't sent upload to server");
@@ -136,21 +136,26 @@ public class Client {
         }
     }
 
-    public synchronized void doGet(int fileId) {
+    public synchronized boolean doGet(int fileId) {
         log.log(Level.INFO, "Get command!");
 
         final Optional<List<SimpleFileRecord>> records = doList();
         if (!records.isPresent()) {
-            return;
+            return false;
         }
 
         final SimpleFileRecord record = records.get().stream().findFirst().get();
         browser.addFutureFile(record);
         Optional<Map<User, List<Integer>>> stat = doStat(fileId);
         if (!stat.isPresent()) {
-            return;
+            return false;
         }
         final Map<User, List<Integer>> schedule = DownloadManager.createSchedule(stat.get());
+        for (Map.Entry<User, List<Integer>> item : schedule.entrySet()) {
+            DownloadManager.doHostGet(fileId, item.getValue(), item.getKey().getPort());
+        }
+
+        return true;
     }
 
     public synchronized Optional<Map<User, List<Integer>>> doStat(int fileId) {

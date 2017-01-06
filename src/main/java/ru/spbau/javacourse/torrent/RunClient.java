@@ -25,6 +25,20 @@ public class RunClient {
         return sb.toString();
     }
 
+    private static void list(Client client) {
+        Optional<List<SimpleFileRecord>> result = client.doList();
+        if (result.isPresent()) {
+            final StringBuilder sb = new StringBuilder();
+            for (SimpleFileRecord record : result.get()) {
+                sb.append(record.getId()).append(" : ");
+                sb.append(record.getName()).append(" (size = ").append(record.getSize()).append(" bytes)");
+            }
+            System.out.println(sb.toString());
+        } else {
+            System.out.println("list command failed!");
+        }
+    }
+
     public static void main(String[] args)  {
         if (args.length < 1) {
             System.out.println("Please, enter argument!");
@@ -43,6 +57,9 @@ public class RunClient {
         }
 
         try (Scanner scanner = new Scanner(System.in)) {
+            System.out.println("Started client on port = " + port);
+            System.out.println(getHelp());
+
             while (scanner.hasNextLine()) {
                 final String line = scanner.nextLine();
                 final String[] input = line.split(" ");
@@ -55,17 +72,7 @@ public class RunClient {
                 try {
                     switch (command) {
                         case "list":
-                            Optional<List<SimpleFileRecord>> result = client.doList();
-                            if (result.isPresent()) {
-                                final StringBuilder sb = new StringBuilder();
-                                for (SimpleFileRecord record : result.get()) {
-                                    sb.append(record.getId()).append(" : ");
-                                    sb.append(record.getName()).append(" (size = ").append(record.getSize()).append(" bytes)");
-                                }
-                                System.out.println(sb.toString());
-                            } else {
-                                System.out.println("list command failed!");
-                            }
+                            list(client);
                             break;
                         case "add":
                             if (input.length < 2) {
@@ -83,6 +90,11 @@ public class RunClient {
                                 continue;
                             }
                             final int fileId = Integer.parseInt(input[1]);
+                            if (client.doGet(fileId)) {
+                                System.out.println("Done!");
+                            } else {
+                                System.out.println("Failed!");
+                            }
                             break;
                         case "exit":
                             client.disconnectFromServer();

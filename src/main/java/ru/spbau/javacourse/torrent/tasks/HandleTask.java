@@ -6,6 +6,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.Optional;
 import java.util.logging.Level;
 
 @Log
@@ -37,13 +38,28 @@ public abstract class HandleTask implements Runnable {
             }
         }
         catch (IOException e) {
-
+            // skip
         } finally {
             try {
                 taskSocket.close();
             } catch (IOException e) {
                 log.log(Level.WARNING, e.getMessage());
             }
+        }
+    }
+
+    /**
+     * Gets ip address from ip:port string
+     * @param address - ip:port
+     * @return ip
+     */
+    protected Optional<String> getHostFromAddress(String address) {
+        String[] parts = address.split(":");
+        if (parts.length > 0) {
+            String ip = parts[0].substring(1);
+            return Optional.of(ip);
+        } else {
+            return Optional.empty();
         }
     }
 }

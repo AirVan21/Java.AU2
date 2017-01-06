@@ -5,9 +5,7 @@ import ru.spbau.javacourse.torrent.database.enity.User;
 import ru.spbau.javacourse.torrent.protocol.ClientClientProtocol;
 import ru.spbau.javacourse.torrent.utils.GlobalConstants;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.Socket;
 import java.util.*;
 import java.util.logging.Level;
@@ -17,14 +15,15 @@ import java.util.logging.Level;
  */
 @Log
 public class DownloadManager {
-    private String DOWNLOAD_DIR = GlobalConstants.DOWNLOAD_DIR;
+    private static String DOWNLOAD_DIR = GlobalConstants.DOWNLOAD_DIR;
 
-    public static synchronized List<Integer> doHostStat(int fileId, short port) {
+    public static List<Integer> doHostStat(int fileId, short port) {
         log.log(Level.INFO, "HostStat command!");
 
         List<Integer> result = new ArrayList<>();
+        Socket clientSocket = null;
         try {
-            Socket clientSocket = new Socket(GlobalConstants.DEFAULT_HOST, port);
+            clientSocket = new Socket(GlobalConstants.DEFAULT_HOST, port);
             final DataOutputStream clientOutput = new DataOutputStream(clientSocket.getOutputStream());
             final DataInputStream clientInput = new DataInputStream(clientSocket.getInputStream());
             ClientClientProtocol.sendStatToClient(clientOutput, fileId);
@@ -32,13 +31,36 @@ public class DownloadManager {
         } catch (IOException e) {
             log.log(Level.WARNING, "Failed HostStat!");
             log.log(Level.WARNING, e.getMessage());
+        } finally {
+            if (clientSocket != null) {
+                try {
+                    clientSocket.close();
+                } catch (IOException e) {
+                    log.log(Level.WARNING, e.getMessage());
+                }
+            }
         }
 
         return result;
     }
 
-    public static synchronized void doPartGet(int fileId, int part, short port) {
+    public static void doHostGet(int fileId, List<Integer> chunks, short port) {
+        for (Integer chunkId : chunks) {
+            doPartGet(fileId, chunkId, port);
+        }
+    }
+
+    public static void doPartGet(int fileId, int part, short port) {
         log.log(Level.INFO, "PartGet command!");
+        try {
+            Socket clientSocket = new Socket(GlobalConstants.DEFAULT_HOST, port);
+            final DataOutputStream clientOutput = new DataOutputStream(clientSocket.getOutputStream());
+            final DataInputStream clientInput = new DataInputStream(clientSocket.getInputStream());
+            ClientClientProtocol.sendGetToClient(clientOutput, fileId, part);
+        } catch (IOException e) {
+            log.log(Level.WARNING, "Failed HostStat!");
+            log.log(Level.WARNING, e.getMessage());
+        }
     }
 
     public static Map<User, List<Integer>> createSchedule(Map<User, List<Integer>> stat) {
@@ -71,11 +93,38 @@ public class DownloadManager {
         return schedule;
     }
 
-    private static synchronized void writeFileChunk(String pathToFile, int chunkId, DataInputStream input) {
+    public static synchronized void writeFileChunk(String path, int chunkId, DataInputStream input) {
+        String pathToFile = DOWNLOAD_DIR + path;
+        RandomAccessFile accessFile = null;
+        try {
+            final File file = new File(pathToFile);
+            if (!file.exists()) {
+                file.createNewFile();
+            }
+            byte[] data = new byte[(int) GlobalConstants.CHUNK_SIZE];
+            int size = input.read(data, 0, (int) GlobalConstants.CHUNK_SIZE);
+            if (size != GlobalConstants.CHUNK_SIZE) {
+                log.log(Level.WARNING, "Hadn't get full chunk!");
+            }
 
+            accessFile = new RandomAccessFile(pathToFile, "w");
+            accessFile.seek(chunkId * GlobalConstants.CHUNK_SIZE);
+            accessFile.write(data);
+        } catch (IOException e) {
+            log.log(Level.WARNING, "Failed to write chunk!");
+            log.log(Level.WARNING, e.getMessage());
+        } finally {
+            if (accessFile != null) {
+                try {
+                    accessFile.close();
+                } catch (IOException e) {
+                    log.log(Level.WARNING, e.getMessage());
+                }
+            }
+        }
     }
 
-    private static synchronized void readFileChunk(String pathToFile, int chunkId, DataOutputStream output) {
+    public static synchronized void readFileChunk(String path, int chunkId, DataOutputStream output) {
 
     }
 }

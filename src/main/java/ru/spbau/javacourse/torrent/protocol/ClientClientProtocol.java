@@ -25,4 +25,15 @@ public class ClientClientProtocol {
 
         return result;
     }
+
+    public static void sendGetToClient(DataOutputStream output, int fileId, int chunkId) throws IOException {
+        output.writeByte(ClientRequest.GET_FILE_REQUEST);
+        output.writeInt(fileId);
+        output.writeInt(chunkId);
+        output.flush();
+    }
+
+    public static void receiveGetToClient(DataInputStream input) {
+
+    }
 }

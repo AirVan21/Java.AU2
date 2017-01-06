@@ -3,6 +3,7 @@ package ru.spbau.javacourse.torrent.database;
 import lombok.extern.java.Log;
 import ru.spbau.javacourse.torrent.database.enity.ServerFileRecord;
 import ru.spbau.javacourse.torrent.database.enity.User;
+import ru.spbau.javacourse.torrent.utils.GlobalConstants;
 
 
 import java.io.FileOutputStream;
@@ -52,9 +53,15 @@ public class ServerDataBase {
 
     public synchronized void close() {
         try {
-            FileOutputStream fos = new FileOutputStream(USER_TO_ID);
+            FileOutputStream fos = new FileOutputStream(GlobalConstants.SERVER_DB_DIR + USER_TO_ID);
             ObjectOutputStream oos = new ObjectOutputStream(fos);
             oos.writeObject(userToIdsMapping);
+            oos.close();
+            fos.close();
+
+            fos = new FileOutputStream(GlobalConstants.SERVER_DB_DIR + FILE_RECORDS);
+            oos = new ObjectOutputStream(fos);
+            oos.writeObject(records);
             oos.close();
             fos.close();
         } catch (java.io.IOException e) {

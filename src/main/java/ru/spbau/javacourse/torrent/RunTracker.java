@@ -12,5 +12,6 @@ public class RunTracker {
     public static void main(String[] args) throws IOException {
         final Tracker tracker = new Tracker();
         tracker.start(GlobalConstants.TRACKER_PORT);
+        System.out.println("Started tracker on port = " + GlobalConstants.TRACKER_PORT);
     }
 }

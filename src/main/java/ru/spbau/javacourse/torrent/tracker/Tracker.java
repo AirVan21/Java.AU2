@@ -71,4 +71,10 @@ public class Tracker extends Server {
         final HandleTrackerTask task = new HandleTrackerTask(this, connection);
         new Thread(task).start();
     }
+
+    @Override
+    public synchronized void stop() throws IOException, InterruptedException {
+        serverDataBase.close();
+        super.stop();
+    }
 }

@@ -78,21 +78,6 @@ public class HandleTrackerTask extends HandleTask {
     }
 
     /**
-     * Gets ip address from ip:port string
-     * @param address - ip:port
-     * @return ip
-     */
-    private Optional<String> getHostFromAddress(String address) {
-        String[] parts = address.split(":");
-        if (parts.length > 0) {
-            String ip = parts[0].substring(1);
-            return Optional.of(ip);
-        } else {
-            return Optional.empty();
-        }
-    }
-
-    /**
      * Converts ip to list of bytes
      * @param ip - comma separated string
      * @return list of ip bytes
