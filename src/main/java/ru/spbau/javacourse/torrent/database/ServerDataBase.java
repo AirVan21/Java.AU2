@@ -8,6 +8,7 @@ import ru.spbau.javacourse.torrent.database.enity.User;
 import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
@@ -15,7 +16,7 @@ import java.util.stream.Collectors;
 public class ServerDataBase {
     public static final String USER_TO_ID = "user-ids.ser";
     public static final String FILE_RECORDS = "records.ser";
-    private final Map<User, Set<Integer>> userToIdsMapping = new HashMap<>();
+    private final ConcurrentHashMap<User, Set<Integer>> userToIdsMapping = new ConcurrentHashMap<>();
     private final Set<ServerFileRecord> records = new HashSet<>();
     private final String serverDBDir;
 

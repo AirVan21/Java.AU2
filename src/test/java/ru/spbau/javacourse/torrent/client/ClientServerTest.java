@@ -3,6 +3,8 @@ package ru.spbau.javacourse.torrent.client;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+
+import static java.lang.Thread.sleep;
 import static org.junit.Assert.*;
 
 import org.junit.rules.TemporaryFolder;
@@ -45,6 +47,8 @@ public class ClientServerTest {
 
         final Client spyClient = runSpyClient (HOST_NAME, GlobalConstants.CLIENT_PORT_FST);
 
+        sleep(100);
+
         spyClient.disconnectFromServer();
         spyTracker.stop();
 
@@ -61,7 +65,9 @@ public class ClientServerTest {
 
         // Create client and run simple update
         Client spyClient = runSpyClient(HOST_NAME, GlobalConstants.CLIENT_PORT_FST);
-        // doUpdate is done by timer
+
+        // doUpdate is done by timer, wait for Update
+        sleep(100);
 
         spyClient.disconnectFromServer();
         spyTracker.stop();
@@ -81,6 +87,9 @@ public class ClientServerTest {
         // Creates and uploads file
         final File file = createTemporaryFile(TEST_FILE_FST);
         spyClient.doUpload(file.getAbsolutePath());
+
+        // doUpload
+        sleep(100);
 
         // Checks that file was written to databases
         assertEquals(1, spyClient.getFileRecords("fileName", file.getAbsolutePath()).size());
@@ -108,6 +117,9 @@ public class ClientServerTest {
         // First client uploads file
         final File file = createTemporaryFile(TEST_FILE_FST);
         spyClientFst.doUpload(file.getAbsolutePath());
+
+        // doUpload
+        sleep(100);
 
         // Second client asks List()
         Optional<List<SimpleFileRecord>> answer = spyClientSnd.doList();
@@ -150,6 +162,9 @@ public class ClientServerTest {
         final File file = createTemporaryFile(TEST_FILE_FST);
         spyClientFst.doUpload(file.getAbsolutePath());
 
+        // doUpload
+        sleep(100);
+
         // Second client asks List()
         Optional<List<SimpleFileRecord>> answer = spyClientSnd.doList();
         assertEquals(1, answer.get().size());
@@ -186,11 +201,14 @@ public class ClientServerTest {
         final File file = createTemporaryFile(TEST_FILE_FST);
         spyClientFst.doUpload(file.getAbsolutePath());
 
+        // doUpload
+        sleep(100);
+
         // Second client asks List()
         Optional<List<SimpleFileRecord>> answer = spyClientSnd.doList();
         assertEquals(1, answer.get().size());
         SimpleFileRecord loadedRecord = answer.get().get(0);
-
+        
         Optional<Map<User, List<Integer>>> stat = spyClientSnd.doStat(loadedRecord.getId());
         assertTrue(stat.isPresent());
         assertEquals(1, stat.get().size());
@@ -223,10 +241,10 @@ public class ClientServerTest {
     }
 
     private Client runSpyClient(String host, short port) throws IOException {
-        Client spyClientSnd = spy(new Client(host, port));
-        spyClientSnd.clearFileRecords();
-        spyClientSnd.connectToServer();
+        Client spyClient = spy(new Client(host, port));
+        spyClient.clearFileRecords();
+        spyClient.connectToServer();
 
-        return spyClientSnd;
+        return spyClient;
     }
 }
