@@ -33,12 +33,7 @@ public class ClientServerTest {
     private final static short SERVER_PORT = GlobalConstants.TRACKER_PORT;
 
     @Rule
-    public final TemporaryFolder temporaryWorkDir = new TemporaryFolder();
-
-    @Before
-    public void setWorkDir() {
-        System.setProperty("user.dir", temporaryWorkDir.getRoot().getAbsolutePath());
-    }
+    public final TemporaryFolder temporaryWorkDir = new TemporaryFolder(new File(GlobalConstants.DOWNLOAD_DIR));
 
     @Test
     public void connectToServerTest() throws Exception {
@@ -222,6 +217,39 @@ public class ClientServerTest {
         assertEquals(file.length() / GlobalConstants.CHUNK_SIZE, chunks.size());
         assertTrue(chunks.contains(0));
         assertTrue(chunks.contains(4));
+
+        // Stops all
+        spyClientFst.disconnectFromServer();
+        spyClientSnd.disconnectFromServer();
+        spyTracker.stop();
+    }
+
+    @Test
+    public void doGet() throws IOException, InterruptedException {
+        // Creates tracker
+        Tracker spyTracker = spy(new Tracker());
+        spyTracker.start(SERVER_PORT);
+
+        // Creates first client
+        Client spyClientFst = runSpyClient(HOST_NAME, GlobalConstants.CLIENT_PORT_FST);
+
+        // Creates second client
+        Client spyClientSnd = runSpyClient(HOST_NAME, GlobalConstants.CLIENT_PORT_SND);
+
+        // First client uploads file
+        final File file = createTemporaryFile(TEST_FILE_FST);
+        spyClientFst.doUpload(file.getAbsolutePath());
+
+        // doUpload
+        sleep(100);
+
+        // Second client asks List()
+        Optional<List<SimpleFileRecord>> answer = spyClientSnd.doList();
+        assertEquals(1, answer.get().size());
+        SimpleFileRecord loadedRecord = answer.get().get(0);
+
+        // Second client asks Get()
+        spyClientSnd.doGet(loadedRecord.getId());
 
         // Stops all
         spyClientFst.disconnectFromServer();

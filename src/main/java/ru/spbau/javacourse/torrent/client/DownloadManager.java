@@ -93,14 +93,10 @@ public class DownloadManager {
         return schedule;
     }
 
-    public static synchronized void writeFileChunk(String path, int chunkId, DataInputStream input) {
-        String pathToFile = DOWNLOAD_DIR + path;
+    public static synchronized void writeFileChunk(String fileName, int chunkId, DataInputStream input) {
+        String pathToFile = DOWNLOAD_DIR + fileName;
         RandomAccessFile accessFile = null;
         try {
-            final File file = new File(pathToFile);
-            if (!file.exists()) {
-                file.createNewFile();
-            }
             byte[] data = new byte[(int) GlobalConstants.CHUNK_SIZE];
             int size = input.read(data, 0, (int) GlobalConstants.CHUNK_SIZE);
             if (size != GlobalConstants.CHUNK_SIZE) {

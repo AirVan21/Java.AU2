@@ -56,8 +56,7 @@ public class HandleClientTask extends HandleTask {
                     return;
                 }
                 record = records.get(0);
-                String path = host.get() + File.separator + record.getFileName();
-                DownloadManager.writeFileChunk(path, chunkId, input);
+                DownloadManager.readFileChunk(record.getFileName(), chunkId, output);
                 break;
         }
         output.flush();
