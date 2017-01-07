@@ -225,7 +225,7 @@ public class ClientServerTest {
     }
 
     @Test
-    public void doGet() throws IOException, InterruptedException {
+    public void doGetSimple() throws IOException, InterruptedException {
         // Creates tracker
         Tracker spyTracker = spy(new Tracker());
         spyTracker.start(SERVER_PORT);
@@ -246,10 +246,12 @@ public class ClientServerTest {
         // Second client asks List()
         Optional<List<SimpleFileRecord>> answer = spyClientSnd.doList();
         assertEquals(1, answer.get().size());
-        SimpleFileRecord loadedRecord = answer.get().get(0);
+        SimpleFileRecord uploadedRecord = answer.get().get(0);
 
-        // Second client asks Get()
-        spyClientSnd.doGet(loadedRecord.getId());
+        // First client asks Get()
+        assertTrue(spyClientFst.doGet(uploadedRecord.getId()));
+        List<ClientFileRecord> records = spyClientFst.getFileRecords("fileName", uploadedRecord.getName());
+        
 
         // Stops all
         spyClientFst.disconnectFromServer();

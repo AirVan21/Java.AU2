@@ -41,6 +41,20 @@ public class FileBrowser {
         return filePath;
     }
 
+    public synchronized void addAvailableChunk(int fileId, int chunkId) {
+        log.log(Level.INFO, "add chunk = " + chunkId + " to fileId = " + fileId);
+
+        final List<ClientFileRecord> records = db.getFileRecords("fileServerId", fileId);
+        if (records.size() != 1) {
+            log.log(Level.WARNING, "Database has collision!");
+            return;
+        }
+        final ClientFileRecord targetRecord = records.get(0);
+        List<Integer> chunks = targetRecord.getAvailableChunks();
+        chunks.add(chunkId);
+        db.updateFileRecord(targetRecord, "availableChunks", chunks);
+    }
+
     public synchronized void publishLocalFile(String fileName, int fileId) {
         log.log(Level.INFO, "publish " + fileName + "with id = " + Integer.toString(fileId));
 
@@ -59,15 +73,15 @@ public class FileBrowser {
     }
 
     public List<ClientFileRecord> getPublishedFileRecords() {
-        return db.getPublishedSharedFiles();
-    }
-
-    public void dropDatabase() {
-        db.dropDatabase();
+        return db.getFileRecords("isPublished", true);
     }
 
     public void dropCollection(Class source) {
         db.dropCollection(source);
+    }
+
+    public void dropDatabase() {
+        db.dropDatabase();
     }
 
     private static List<Integer> makeFileChunks(long fileSize) {

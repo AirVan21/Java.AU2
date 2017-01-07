@@ -7,9 +7,6 @@ import ru.spbau.javacourse.torrent.utils.GlobalConstants;
 
 import java.io.*;
 import java.net.Socket;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.logging.Level;
 
@@ -18,8 +15,15 @@ import java.util.logging.Level;
  */
 @Log
 public class DownloadManager {
-    private static String DOWNLOAD_DIR = GlobalConstants.DOWNLOAD_DIR;
+    public static final String READ_WRITE = "rw";
+    public static final String READ = "r";
 
+    /**
+     * Asks chunk information about file
+     * @param fileId id of the file
+     * @param port id of the chunk
+     * @return list of available chunk ids
+     */
     public static List<Integer> doHostStat(int fileId, short port) {
         log.log(Level.INFO, "HostStat command!");
 
@@ -47,27 +51,56 @@ public class DownloadManager {
         return result;
     }
 
-    public static void doHostGet(int fileId, String filePath, List<Integer> chunks, short port) {
+    /**
+     * Downloads file chunks (and updates db)
+     */
+    public static void doHostGet(int fileId, String filePath, List<Integer> chunks, short port, FileBrowser browser) {
+        log.log(Level.INFO, "Get for port = " + port);
+
         for (Integer chunkId : chunks) {
-            doPartGet(fileId, filePath, chunkId, port);
+            if (doPartGet(fileId, filePath, chunkId, port)) {
+                browser.addAvailableChunk(fileId, chunkId);
+            }
         }
     }
 
-    public static void doPartGet(int fileId, String filePath, int part, short port) {
-        log.log(Level.INFO, "PartGet command!");
+    /**
+     * Downloads selected file chunk
+     */
+    private static boolean doPartGet(int fileId, String filePath, int part, short port) {
+        log.log(Level.INFO, "PartGet command for chunk = " + part);
+
+        boolean isSuccess = true;
+        Socket clientSocket = null;
         try {
-            Socket clientSocket = new Socket(GlobalConstants.DEFAULT_HOST, port);
+            clientSocket = new Socket(GlobalConstants.DEFAULT_HOST, port);
             final DataOutputStream clientOutput = new DataOutputStream(clientSocket.getOutputStream());
             final DataInputStream clientInput = new DataInputStream(clientSocket.getInputStream());
             ClientClientProtocol.sendGetToClient(clientOutput, fileId, part);
             byte[] data = ClientClientProtocol.receiveGetToClient(clientInput);
             DownloadManager.writeFileChunk(filePath, part, data);
         } catch (IOException e) {
+            isSuccess = false;
             log.log(Level.WARNING, "Failed HostStat!");
             log.log(Level.WARNING, e.getMessage());
+        } finally {
+            if (clientSocket != null) {
+                try {
+                    clientSocket.close();
+                } catch (IOException e) {
+                    log.log(Level.INFO, "Couldn't close socket!");
+                }
+            }
         }
+
+        return isSuccess;
     }
 
+    /**
+     * Creates schedule for sequential downloading
+     * @param stat statistics about available chunks
+     * @return schedule
+     */
     public static Map<User, List<Integer>> createSchedule(Map<User, List<Integer>> stat) {
         final Map<User, List<Integer>> schedule = new HashMap<>();
         final Set<Integer> scheduledChunks = new HashSet<>();
@@ -79,7 +112,6 @@ public class DownloadManager {
                 Optional<Integer> chunk = seed.getValue().stream()
                         .filter(item -> !scheduledChunks.contains(item))
                         .findFirst();
-                //
                 if (chunk.isPresent()) {
                     wasTaken = true;
                     scheduledChunks.add(chunk.get());
@@ -98,19 +130,25 @@ public class DownloadManager {
         return schedule;
     }
 
-    public static synchronized void writeFileChunk(String pathToFile, int chunkId, byte[] data) {
-        RandomAccessFile accessFile = null;
-        try {
-            File file = new File(pathToFile);
-            if (!file.exists()) {
-                file.getParentFile().mkdirs();
-                file.createNewFile();
-            }
+    /**
+     * Writes file chunk to input stream
+     * @param pathToFile path to file where we will store data
+     * @param chunkId id of chunk
+     * @param data data which will be stored
+     */
+    public static synchronized boolean writeFileChunk(String pathToFile, int chunkId, byte[] data) {
+        log.log(Level.INFO, "Write file chunk to " + pathToFile);
 
-            accessFile = new RandomAccessFile(pathToFile, "rw");
-            accessFile.seek(chunkId * GlobalConstants.CHUNK_SIZE);
+        boolean success = true;
+        RandomAccessFile accessFile = null;
+        long position = chunkId * GlobalConstants.CHUNK_SIZE;
+        verifyPath(pathToFile);
+        try {
+            accessFile = new RandomAccessFile(pathToFile, READ_WRITE);
+            accessFile.seek(position);
             accessFile.write(data);
         } catch (IOException e) {
+            success = false;
             log.log(Level.WARNING, "Failed to write chunk!");
             log.log(Level.WARNING, e.getMessage());
         } finally {
@@ -122,6 +160,8 @@ public class DownloadManager {
                 }
             }
         }
+
+        return success;
     }
 
     /**
@@ -130,17 +170,50 @@ public class DownloadManager {
      * @param chunkId id of target chunk
      * @param output place where read data will be stored
      */
-    public static synchronized void readFileChunk(String pathToFile, int chunkId, DataOutputStream output) {
+    public static synchronized boolean readFileChunk(String pathToFile, int chunkId, DataOutputStream output) {
+        log.log(Level.INFO, "Reading file chunk from " + pathToFile);
+
+        boolean isSuccess = true;
+        RandomAccessFile accessFile = null;
         int position = chunkId * (int) GlobalConstants.CHUNK_SIZE;
         try {
-            RandomAccessFile accessFile = new RandomAccessFile(pathToFile, "r");
+            accessFile = new RandomAccessFile(pathToFile, READ);
             accessFile.seek(position);
             byte[] data = new byte[(int) GlobalConstants.CHUNK_SIZE];
             accessFile.read(data, position, (int) GlobalConstants.CHUNK_SIZE);
             output.write(data);
         } catch (IOException e) {
-            log.log(Level.WARNING, "Failed to read file chunk!");
+            isSuccess = false;
+            log.log(Level.WARNING, "Failed to read file chunk for " + pathToFile);
             log.log(Level.WARNING, e.getMessage());
+        } finally {
+            try {
+                if (accessFile != null) {
+                    accessFile.close();
+                }
+            } catch (IOException e) {
+                log.log(Level.WARNING, "Couldn't close Random Access file for " + pathToFile);
+            }
+        }
+
+        return isSuccess;
+    }
+
+    /**
+     * Creates folders and target file
+     * @param pathToFile path to target file
+     */
+    private static void verifyPath(String pathToFile) {
+        final File file = new File(pathToFile);
+        if (file.exists()) {
+            return;
+        }
+
+        try {
+            file.getParentFile().mkdirs();
+            file.createNewFile();
+        } catch (IOException e) {
+            log.log(Level.WARNING, "Failed to create file " + pathToFile);
         }
     }
 }
