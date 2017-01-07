@@ -21,18 +21,20 @@ import java.util.logging.Level;
  */
 @Log
 public class Client {
-    private final String serverName;
-    private final short port;
     private Socket socket;
     private DataInputStream input;
     private DataOutputStream output;
+    private final String serverName;
+    private final short port;
     private final Timer timer = new Timer();
-    private final FileBrowser browser = new FileBrowser();
-    private final LocalServer localServer = new LocalServer(browser);
+    private final FileBrowser browser;
+    private final LocalServer localServer;
 
     public Client(String serverName, short port) {
         this.serverName = serverName;
         this.port = port;
+        this.browser = new FileBrowser(port);
+        this.localServer = new LocalServer(browser);
     }
 
     /**
@@ -67,6 +69,10 @@ public class Client {
         localServer.stop();
     }
 
+    /**
+     * Sends list request
+     * @return list of files which could be downloaded
+     */
     public synchronized Optional<List<SimpleFileRecord>> doList() {
         log.log(Level.INFO, "List command");
 
@@ -124,7 +130,7 @@ public class Client {
             return;
         }
 
-        browser.addLocalFile(file.getName(), file.length());
+        browser.addLocalFile(file.getName(), file.getAbsolutePath(), file.length());
         try {
             ClientServerProtocol.sendUploadToServer(output, file.getName(), file.length());
             int fileId = ClientServerProtocol.receiveUploadResponseFromServer(input);
@@ -145,14 +151,14 @@ public class Client {
         }
 
         final SimpleFileRecord record = records.get().stream().findFirst().get();
-        browser.addFutureFile(record);
+        final String filePath = browser.addFutureFile(record);
         Optional<Map<User, List<Integer>>> stat = doStat(fileId);
         if (!stat.isPresent()) {
             return false;
         }
         final Map<User, List<Integer>> schedule = DownloadManager.createSchedule(stat.get());
         for (Map.Entry<User, List<Integer>> item : schedule.entrySet()) {
-            DownloadManager.doHostGet(fileId, item.getValue(), item.getKey().getPort());
+            DownloadManager.doHostGet(fileId, filePath, item.getValue(), item.getKey().getPort());
         }
 
         return true;

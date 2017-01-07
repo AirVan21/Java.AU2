@@ -1,7 +1,6 @@
 package ru.spbau.javacourse.torrent.client;
 
 
-import ru.spbau.javacourse.torrent.database.ClientDataBase;
 import ru.spbau.javacourse.torrent.tasks.HandleClientTask;
 import ru.spbau.javacourse.torrent.tracker.Server;
 

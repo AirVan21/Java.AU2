@@ -3,13 +3,12 @@ package ru.spbau.javacourse.torrent.client;
 import lombok.extern.java.Log;
 import ru.spbau.javacourse.torrent.database.ClientDataBase;
 import ru.spbau.javacourse.torrent.database.enity.ClientFileRecord;
-import ru.spbau.javacourse.torrent.database.enity.ServerFileRecord;
 import ru.spbau.javacourse.torrent.database.enity.SimpleFileRecord;
 import ru.spbau.javacourse.torrent.utils.GlobalConstants;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
 
 /**
@@ -18,22 +17,28 @@ import java.util.logging.Level;
 @Log
 public class FileBrowser {
     private final ClientDataBase db = new ClientDataBase(GlobalConstants.CLIENT_DB_NAME);
+    private final short port;
     private static final int DEFAULT_FILE_SERVER_ID = 0;
 
-    public FileBrowser() {}
+    public FileBrowser(short port) {
+        this.port = port;
+    }
 
-    public synchronized void addLocalFile(String fileName, long fileSize) {
+    public synchronized void addLocalFile(String fileName, String filePath, long fileSize) {
         log.log(Level.INFO, "addFutureFile: " + fileName);
 
         final boolean isPublished = false;
-        db.saveFileRecord(new ClientFileRecord(fileName, fileSize, makeFileChunks(fileSize), isPublished, DEFAULT_FILE_SERVER_ID));
+        db.saveFileRecord(new ClientFileRecord(fileName, filePath, fileSize, makeFileChunks(fileSize), isPublished, DEFAULT_FILE_SERVER_ID));
     }
 
-    public synchronized void addFutureFile(SimpleFileRecord record) {
+    public synchronized String addFutureFile(SimpleFileRecord record) {
         log.log(Level.INFO, "addFutureFile: " + record.getName());
 
+        final String filePath = GlobalConstants.DOWNLOAD_DIR + port + File.separator + record.getName();
         final boolean isPublished = false;
-        db.saveFileRecord(new ClientFileRecord(record.getName(), record.getSize(), new ArrayList<>(), isPublished, DEFAULT_FILE_SERVER_ID));
+        db.saveFileRecord(new ClientFileRecord(record.getName(), filePath, record.getSize(), new ArrayList<>(), isPublished, DEFAULT_FILE_SERVER_ID));
+
+        return filePath;
     }
 
     public synchronized void publishLocalFile(String fileName, int fileId) {

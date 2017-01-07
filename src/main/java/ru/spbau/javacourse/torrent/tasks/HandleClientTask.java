@@ -6,7 +6,6 @@ import ru.spbau.javacourse.torrent.client.FileBrowser;
 import ru.spbau.javacourse.torrent.commands.ClientRequest;
 import ru.spbau.javacourse.torrent.database.enity.ClientFileRecord;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.List;
@@ -25,40 +24,36 @@ public class HandleClientTask extends HandleTask {
     @Override
     protected void executeRequest(byte requestId) throws IOException {
         log.log(Level.INFO, "Executes request = " + Byte.toString(requestId));
-
-        final Optional<String> host = getHostFromAddress(taskSocket.getRemoteSocketAddress().toString());
-        if (!host.isPresent()) {
+        
+        int fileId = input.readInt();
+        Optional<ClientFileRecord> record = getSingleFileRecordById(fileId);
+        if (!record.isPresent()) {
+            log.log(Level.WARNING, "ClientFileRecord id collision!");
+            output.writeInt(0);
             return;
         }
 
         switch (requestId) {
             case ClientRequest.GET_STAT_REQUEST:
-                int fileId = input.readInt();
-                List<ClientFileRecord> records = browser.getClientFileRecords("fileServerId", fileId);
-                if (records.size() != 1) {
-                    log.log(Level.WARNING, "ClientFileRecord id collision!");
-                    output.writeInt(0);
-                    return;
-                }
-                ClientFileRecord record = records.get(0);
-                output.writeInt(record.getAvailableChunks().size());
-                for (Integer chunkId : record.getAvailableChunks()) {
+                output.writeInt(record.get().getAvailableChunks().size());
+                for (Integer chunkId : record.get().getAvailableChunks()) {
                     output.writeInt(chunkId);
                 }
                 break;
             case ClientRequest.GET_FILE_REQUEST:
-                fileId = input.readInt();
                 int chunkId = input.readInt();
-                records = browser.getClientFileRecords("fileServerId", fileId);
-                if (records.size() != 1) {
-                    log.log(Level.WARNING, "ClientFileRecord id collision!");
-                    output.writeInt(0);
-                    return;
-                }
-                record = records.get(0);
-                DownloadManager.readFileChunk(record.getFileName(), chunkId, output);
+                DownloadManager.readFileChunk(record.get().getFilePath(), chunkId, output);
                 break;
         }
+
+        // Flushed response
         output.flush();
+    }
+
+    private Optional<ClientFileRecord> getSingleFileRecordById(int fileId) {
+        final String FILE_ID_FIELD = "fileServerId";
+        List<ClientFileRecord> records = browser.getClientFileRecords(FILE_ID_FIELD, fileId);
+
+        return records.size() == 1 ? Optional.of(records.get(0)) : Optional.empty();
     }
 }

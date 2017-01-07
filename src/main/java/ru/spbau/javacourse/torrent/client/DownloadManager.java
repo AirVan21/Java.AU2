@@ -7,6 +7,9 @@ import ru.spbau.javacourse.torrent.utils.GlobalConstants;
 
 import java.io.*;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.logging.Level;
 
@@ -44,19 +47,21 @@ public class DownloadManager {
         return result;
     }
 
-    public static void doHostGet(int fileId, List<Integer> chunks, short port) {
+    public static void doHostGet(int fileId, String filePath, List<Integer> chunks, short port) {
         for (Integer chunkId : chunks) {
-            doPartGet(fileId, chunkId, port);
+            doPartGet(fileId, filePath, chunkId, port);
         }
     }
 
-    public static void doPartGet(int fileId, int part, short port) {
+    public static void doPartGet(int fileId, String filePath, int part, short port) {
         log.log(Level.INFO, "PartGet command!");
         try {
             Socket clientSocket = new Socket(GlobalConstants.DEFAULT_HOST, port);
             final DataOutputStream clientOutput = new DataOutputStream(clientSocket.getOutputStream());
             final DataInputStream clientInput = new DataInputStream(clientSocket.getInputStream());
             ClientClientProtocol.sendGetToClient(clientOutput, fileId, part);
+            byte[] data = ClientClientProtocol.receiveGetToClient(clientInput);
+            DownloadManager.writeFileChunk(filePath, part, data);
         } catch (IOException e) {
             log.log(Level.WARNING, "Failed HostStat!");
             log.log(Level.WARNING, e.getMessage());
@@ -93,17 +98,16 @@ public class DownloadManager {
         return schedule;
     }
 
-    public static synchronized void writeFileChunk(String fileName, int chunkId, DataInputStream input) {
-        String pathToFile = DOWNLOAD_DIR + fileName;
+    public static synchronized void writeFileChunk(String pathToFile, int chunkId, byte[] data) {
         RandomAccessFile accessFile = null;
         try {
-            byte[] data = new byte[(int) GlobalConstants.CHUNK_SIZE];
-            int size = input.read(data, 0, (int) GlobalConstants.CHUNK_SIZE);
-            if (size != GlobalConstants.CHUNK_SIZE) {
-                log.log(Level.WARNING, "Hadn't get full chunk!");
+            File file = new File(pathToFile);
+            if (!file.exists()) {
+                file.getParentFile().mkdirs();
+                file.createNewFile();
             }
 
-            accessFile = new RandomAccessFile(pathToFile, "w");
+            accessFile = new RandomAccessFile(pathToFile, "rw");
             accessFile.seek(chunkId * GlobalConstants.CHUNK_SIZE);
             accessFile.write(data);
         } catch (IOException e) {
@@ -120,7 +124,23 @@ public class DownloadManager {
         }
     }
 
-    public static synchronized void readFileChunk(String path, int chunkId, DataOutputStream output) {
-
+    /**
+     * Reads file chunk to output stream
+     * @param pathToFile path to file which will be read
+     * @param chunkId id of target chunk
+     * @param output place where read data will be stored
+     */
+    public static synchronized void readFileChunk(String pathToFile, int chunkId, DataOutputStream output) {
+        int position = chunkId * (int) GlobalConstants.CHUNK_SIZE;
+        try {
+            RandomAccessFile accessFile = new RandomAccessFile(pathToFile, "r");
+            accessFile.seek(position);
+            byte[] data = new byte[(int) GlobalConstants.CHUNK_SIZE];
+            accessFile.read(data, position, (int) GlobalConstants.CHUNK_SIZE);
+            output.write(data);
+        } catch (IOException e) {
+            log.log(Level.WARNING, "Failed to read file chunk!");
+            log.log(Level.WARNING, e.getMessage());
+        }
     }
 }

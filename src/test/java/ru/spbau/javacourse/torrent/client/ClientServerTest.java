@@ -261,6 +261,10 @@ public class ClientServerTest {
         final File file = temporaryWorkDir.newFile(fileName);
         final FileOutputStream stream = new FileOutputStream(file);
         byte[] buffer = new byte[(int) GlobalConstants.CHUNK_SIZE * 5];
+        buffer[0] = 1;
+        buffer[1] = 2;
+        buffer[2] = 3;
+
         stream.write(buffer);
         stream.flush();
         stream.close();
