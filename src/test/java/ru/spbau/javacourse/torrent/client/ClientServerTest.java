@@ -249,9 +249,17 @@ public class ClientServerTest {
         SimpleFileRecord uploadedRecord = answer.get().get(0);
 
         // First client asks Get()
-        assertTrue(spyClientFst.doGet(uploadedRecord.getId()));
-        List<ClientFileRecord> downloadedRecords = spyClientFst.getFileRecords("fileName", uploadedRecord.getName());
+        assertTrue(spyClientSnd.doGet(uploadedRecord.getId()));
+        List<ClientFileRecord> downloadedRecords = spyClientSnd.getFileRecords("fileName", uploadedRecord.getName());
+        assertEquals(1, downloadedRecords.size());
+        ClientFileRecord targetRecord = downloadedRecords.get(0);
 
+        assertEquals(uploadedRecord.getName(), targetRecord.getFileName());
+        assertEquals(uploadedRecord.getSize(), targetRecord.getFileSize());
+        assertEquals(uploadedRecord.getId(), targetRecord.getFileServerId());
+
+        File downloadedFile = new File(targetRecord.getFilePath());
+        assertEquals(file.length(), downloadedFile.length());
 
         // Stops all
         spyClientFst.disconnectFromServer();

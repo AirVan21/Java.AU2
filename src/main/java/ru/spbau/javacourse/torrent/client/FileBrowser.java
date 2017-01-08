@@ -37,7 +37,7 @@ public class FileBrowser {
 
         final String filePath = GlobalConstants.DOWNLOAD_DIR + port + File.separator + record.getName();
         final boolean isPublished = false;
-        db.saveFileRecord(new ClientFileRecord(record.getName(), filePath, record.getSize(), port, new ArrayList<>(), isPublished, DEFAULT_FILE_SERVER_ID));
+        db.saveFileRecord(new ClientFileRecord(record.getName(), filePath, record.getSize(), port, new ArrayList<>(), isPublished, record.getId()));
 
         return filePath;
     }
