@@ -1,5 +1,6 @@
 package ru.spbau.javacourse.torrent.client;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -260,6 +261,7 @@ public class ClientServerTest {
 
         File downloadedFile = new File(targetRecord.getFilePath());
         assertEquals(file.length(), downloadedFile.length());
+        assertTrue(FileUtils.contentEquals(file, downloadedFile));
 
         // Stops all
         spyClientFst.disconnectFromServer();
