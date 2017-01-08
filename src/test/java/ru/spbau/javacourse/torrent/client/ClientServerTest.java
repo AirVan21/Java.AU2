@@ -250,8 +250,8 @@ public class ClientServerTest {
 
         // First client asks Get()
         assertTrue(spyClientFst.doGet(uploadedRecord.getId()));
-        List<ClientFileRecord> records = spyClientFst.getFileRecords("fileName", uploadedRecord.getName());
-        
+        List<ClientFileRecord> downloadedRecords = spyClientFst.getFileRecords("fileName", uploadedRecord.getName());
+
 
         // Stops all
         spyClientFst.disconnectFromServer();

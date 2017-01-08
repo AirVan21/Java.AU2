@@ -10,6 +10,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 /**
  * FileBrowser class collects information about sharing files
@@ -28,7 +29,7 @@ public class FileBrowser {
         log.log(Level.INFO, "addFutureFile: " + fileName);
 
         final boolean isPublished = false;
-        db.saveFileRecord(new ClientFileRecord(fileName, filePath, fileSize, makeFileChunks(fileSize), isPublished, DEFAULT_FILE_SERVER_ID));
+        db.saveFileRecord(new ClientFileRecord(fileName, filePath, fileSize, port ,makeFileChunks(fileSize), isPublished, DEFAULT_FILE_SERVER_ID));
     }
 
     public synchronized String addFutureFile(SimpleFileRecord record) {
@@ -36,7 +37,7 @@ public class FileBrowser {
 
         final String filePath = GlobalConstants.DOWNLOAD_DIR + port + File.separator + record.getName();
         final boolean isPublished = false;
-        db.saveFileRecord(new ClientFileRecord(record.getName(), filePath, record.getSize(), new ArrayList<>(), isPublished, DEFAULT_FILE_SERVER_ID));
+        db.saveFileRecord(new ClientFileRecord(record.getName(), filePath, record.getSize(), port, new ArrayList<>(), isPublished, DEFAULT_FILE_SERVER_ID));
 
         return filePath;
     }
@@ -69,11 +70,19 @@ public class FileBrowser {
     }
 
     public <T> List<ClientFileRecord> getClientFileRecords(String fieldName, T value) {
-        return db.getFileRecords(fieldName, value);
+        final List<ClientFileRecord> records = db.getFileRecords(fieldName, value);
+        return records
+                .stream()
+                .filter(item -> item.getPort() == port)
+                .collect(Collectors.toList());
     }
 
     public List<ClientFileRecord> getPublishedFileRecords() {
-        return db.getFileRecords("isPublished", true);
+        final List<ClientFileRecord> records = db.getFileRecords("isPublished", true);
+        return records
+                .stream()
+                .filter(item -> item.getPort() == port)
+                .collect(Collectors.toList());
     }
 
     public void dropCollection(Class source) {

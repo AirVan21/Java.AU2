@@ -158,7 +158,7 @@ public class Client {
         }
         final Map<User, List<Integer>> schedule = DownloadManager.createSchedule(stat.get());
         for (Map.Entry<User, List<Integer>> item : schedule.entrySet()) {
-            DownloadManager.doHostGet(fileId, filePath, item.getValue(), item.getKey().getPort(), browser);
+            DownloadManager.doHostGet(fileId, filePath, record.getSize(), item.getValue(), item.getKey().getPort(), browser);
         }
 
         return true;

@@ -1,7 +1,6 @@
 package ru.spbau.javacourse.torrent.protocol;
 
 import ru.spbau.javacourse.torrent.commands.ClientRequest;
-import ru.spbau.javacourse.torrent.utils.GlobalConstants;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -34,9 +33,9 @@ public class ClientClientProtocol {
         output.flush();
     }
 
-    public static byte[] receiveGetToClient(DataInputStream input) throws IOException {
-        byte[] data = new byte[(int) GlobalConstants.CHUNK_SIZE];
-        input.read(data, 0, (int) GlobalConstants.CHUNK_SIZE);
+    public static byte[] receiveGetToClient(DataInputStream input, long length) throws IOException {
+        byte[] data = new byte[(int) length];
+        input.readFully(data);
         return data;
     }
 }

@@ -17,6 +17,7 @@ public class ClientFileRecord {
     private String fileName = "";
     private String filePath = "";
     private long fileSize;
+    private short port;
     private boolean isPublished = false;
     private int fileServerId;
     private List<Integer> availableChunks = new ArrayList<>();
@@ -33,10 +34,11 @@ public class ClientFileRecord {
      * @param availableChunks - ids of chunks which are empty
      * @param isPublished - flag, true is file is available for downloading (false otherwise)
      */
-    public ClientFileRecord(String fileName, String filePath, long fileSize, List<Integer> availableChunks, boolean isPublished, int fileServerId) {
+    public ClientFileRecord(String fileName, String filePath, long fileSize, short port, List<Integer> availableChunks, boolean isPublished, int fileServerId) {
         this.fileName = fileName;
         this.filePath = filePath;
         this.fileSize = fileSize;
+        this.port = port;
         this.availableChunks = availableChunks;
         this.isPublished = isPublished;
         this.fileServerId = fileServerId;
@@ -80,5 +82,13 @@ public class ClientFileRecord {
 
     public void setFilePath(String filePath) {
         this.filePath = filePath;
+    }
+
+    public short getPort() {
+        return port;
+    }
+
+    public void setPort(short port) {
+        this.port = port;
     }
 }

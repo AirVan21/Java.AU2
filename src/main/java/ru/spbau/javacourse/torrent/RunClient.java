@@ -31,7 +31,7 @@ public class RunClient {
             final StringBuilder sb = new StringBuilder();
             for (SimpleFileRecord record : result.get()) {
                 sb.append(record.getId()).append(" : ");
-                sb.append(record.getName()).append(" (size = ").append(record.getSize()).append(" bytes)");
+                sb.append(record.getName()).append(" (size = ").append(record.getSize()).append(" bytes)\n");
             }
             System.out.println(sb.toString());
         } else {

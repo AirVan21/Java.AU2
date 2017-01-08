@@ -54,11 +54,11 @@ public class DownloadManager {
     /**
      * Downloads file chunks (and updates db)
      */
-    public static void doHostGet(int fileId, String filePath, List<Integer> chunks, short port, FileBrowser browser) {
+    public static void doHostGet(int fileId, String filePath, long fileSize, List<Integer> chunks, short port, FileBrowser browser) {
         log.log(Level.INFO, "Get for port = " + port);
 
         for (Integer chunkId : chunks) {
-            if (doPartGet(fileId, filePath, chunkId, port)) {
+            if (doPartGet(fileId, filePath, fileSize, chunkId, port)) {
                 browser.addAvailableChunk(fileId, chunkId);
             }
         }
@@ -67,8 +67,8 @@ public class DownloadManager {
     /**
      * Downloads selected file chunk
      */
-    private static boolean doPartGet(int fileId, String filePath, int part, short port) {
-        log.log(Level.INFO, "PartGet command for chunk = " + part);
+    private static boolean doPartGet(int fileId, String filePath, long fileSize, int chunkId, short port) {
+        log.log(Level.INFO, "PartGet command for chunk = " + chunkId);
 
         boolean isSuccess = true;
         Socket clientSocket = null;
@@ -76,9 +76,10 @@ public class DownloadManager {
             clientSocket = new Socket(GlobalConstants.DEFAULT_HOST, port);
             final DataOutputStream clientOutput = new DataOutputStream(clientSocket.getOutputStream());
             final DataInputStream clientInput = new DataInputStream(clientSocket.getInputStream());
-            ClientClientProtocol.sendGetToClient(clientOutput, fileId, part);
-            byte[] data = ClientClientProtocol.receiveGetToClient(clientInput);
-            DownloadManager.writeFileChunk(filePath, part, data);
+            ClientClientProtocol.sendGetToClient(clientOutput, fileId, chunkId);
+            long chunkLength = getReadLength(fileSize, chunkId);
+            byte[] data = ClientClientProtocol.receiveGetToClient(clientInput, chunkLength);
+            DownloadManager.writeFileChunk(filePath, chunkId, data);
         } catch (IOException e) {
             isSuccess = false;
             log.log(Level.WARNING, "Failed HostStat!");
@@ -179,8 +180,9 @@ public class DownloadManager {
         try {
             accessFile = new RandomAccessFile(pathToFile, READ);
             accessFile.seek(position);
-            byte[] data = new byte[(int) GlobalConstants.CHUNK_SIZE];
-            accessFile.read(data, position, (int) GlobalConstants.CHUNK_SIZE);
+            int readLength = (int) getReadLength(accessFile.length(), chunkId);
+            byte[] data = new byte[readLength];
+            accessFile.readFully(data);
             output.write(data);
         } catch (IOException e) {
             isSuccess = false;
@@ -215,5 +217,13 @@ public class DownloadManager {
         } catch (IOException e) {
             log.log(Level.WARNING, "Failed to create file " + pathToFile);
         }
+    }
+
+    private static long getReadLength(long fileSize, int chunkId) {
+        long position = chunkId * GlobalConstants.CHUNK_SIZE;
+        long diff = fileSize - position;
+        return diff >= GlobalConstants.CHUNK_SIZE
+                ? GlobalConstants.CHUNK_SIZE
+                : diff;
     }
 }
