@@ -92,10 +92,6 @@ public class FileBrowser {
         db.dropCollection(source);
     }
 
-    public void dropDatabase() {
-        db.dropDatabase();
-    }
-
     private static List<Integer> makeFileChunks(long fileSize) {
         final List<Integer> chunks = new ArrayList<>();
         long amountOfChunks = (fileSize % GlobalConstants.CHUNK_SIZE == 0)

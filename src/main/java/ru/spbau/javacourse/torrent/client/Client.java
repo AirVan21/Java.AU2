@@ -87,6 +87,10 @@ public class Client {
         return Optional.empty();
     }
 
+    /**
+     * Sends sources request
+     * (Gets information about seeds)
+     */
     public synchronized Optional<List<User>> doSources(int fileId) {
         log.log(Level.INFO, "Sources command");
 
@@ -142,6 +146,12 @@ public class Client {
         }
     }
 
+    /**
+     * Downloads selected file
+     * @param fileId id of selected file
+     * @return true - is download is successful
+     *         false - otherwise
+     */
     public synchronized boolean doGet(int fileId) {
         log.log(Level.INFO, "Get command!");
 
@@ -164,6 +174,11 @@ public class Client {
         return true;
     }
 
+    /**
+     * Gets info about file chinks
+     * @param fileId selected file
+     * @return map <user, available file chunks>
+     */
     public synchronized Optional<Map<User, List<Integer>>> doStat(int fileId) {
         log.log(Level.INFO, "Stat command!");
 
@@ -183,10 +198,16 @@ public class Client {
         return Optional.of(portToChunks);
     }
 
+    /**
+     * Gets all file record from database
+     */
     public synchronized <T> List<ClientFileRecord> getFileRecords(String fieldName, T value) {
         return browser.getClientFileRecords(fieldName, value);
     }
 
+    /**
+     * Clears all file record from database
+     */
     public synchronized void clearFileRecords() {
         browser.dropCollection(ClientFileRecord.class);
     }

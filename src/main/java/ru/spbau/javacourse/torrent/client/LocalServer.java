@@ -7,6 +7,10 @@ import ru.spbau.javacourse.torrent.tracker.Server;
 import java.io.IOException;
 import java.net.Socket;
 
+/**
+ * Server for client
+ * (Handles client to client requests)
+ */
 public class LocalServer extends Server {
     private final FileBrowser browser;
 

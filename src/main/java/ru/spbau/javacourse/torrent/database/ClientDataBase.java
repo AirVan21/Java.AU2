@@ -38,18 +38,6 @@ public class ClientDataBase {
         datastore.update(record, update);
     }
 
-    public List<ClientFileRecord> getPublishedSharedFiles() {
-        return datastore
-                .find(ClientFileRecord.class)
-                .field("isPublished")
-                .equal(true)
-                .asList();
-    }
-
-    public void dropDatabase() {
-        datastore.getDB().dropDatabase();
-    }
-
     public void dropCollection(Class source) {
         datastore.getCollection(source).drop();
     }

@@ -1,6 +1,8 @@
 package ru.spbau.javacourse.torrent.database.enity;
 
-
+/**
+ * Simple structure for file record (used in protocol)
+ */
 public class SimpleFileRecord {
     private final int id;
     private final String name;

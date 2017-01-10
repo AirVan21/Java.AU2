@@ -1,6 +1,11 @@
 package ru.spbau.javacourse.torrent.database.enity;
 
-public class ServerFileRecord {
+import java.io.Serializable;
+
+/**
+ * File record which will be stored on a server
+ */
+public class ServerFileRecord implements Serializable {
     private String name;
     private long size;
     private String source;

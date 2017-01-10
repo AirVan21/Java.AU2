@@ -4,7 +4,6 @@ import ru.spbau.javacourse.torrent.database.ServerDataBase;
 import ru.spbau.javacourse.torrent.database.enity.ServerFileRecord;
 import ru.spbau.javacourse.torrent.database.enity.User;
 import ru.spbau.javacourse.torrent.tasks.HandleTrackerTask;
-import ru.spbau.javacourse.torrent.utils.GlobalConstants;
 
 
 import java.io.IOException;
@@ -13,9 +12,10 @@ import java.util.Set;
 
 /**
  * Tracker class
+ * (Handles client to tracker requests)
  */
 public class Tracker extends Server {
-    private final ServerDataBase serverDataBase = new ServerDataBase(GlobalConstants.SERVER_DB_DIR);
+    private final ServerDataBase serverDataBase = new ServerDataBase();
 
     /**
      * Adds user update information to ServerDataBase

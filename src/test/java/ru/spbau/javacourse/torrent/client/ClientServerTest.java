@@ -30,7 +30,6 @@ import static org.mockito.Mockito.verify;
 public class ClientServerTest {
     private final static String HOST_NAME = "127.0.0.1";
     private final static String TEST_FILE_FST = "test_file_fst";
-    private final static String TEST_FILE_SND = "test_file_snd";
     private final static short SERVER_PORT = GlobalConstants.TRACKER_PORT;
 
     @Rule
@@ -351,6 +350,7 @@ public class ClientServerTest {
     private File createTemporaryFile(String fileName) throws IOException {
         final File file = temporaryWorkDir.newFile(fileName);
         final FileOutputStream stream = new FileOutputStream(file);
+
         byte[] buffer = new byte[(int) GlobalConstants.CHUNK_SIZE * 5];
         buffer[0] = 1;
         buffer[1] = 2;
