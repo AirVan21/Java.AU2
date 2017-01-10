@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.util.*;
 
 /**
- *
+ * Protocol which determine client vs tracker communication rules
  */
 public class ClientServerProtocol {
 

@@ -8,6 +8,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Protocol which determine client vs client communication rules
+ */
 public class ClientClientProtocol {
 
     public static void sendStatToClient(DataOutputStream output, int fileId) throws IOException {

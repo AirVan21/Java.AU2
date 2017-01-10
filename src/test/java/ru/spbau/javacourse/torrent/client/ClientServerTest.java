@@ -1,7 +1,6 @@
 package ru.spbau.javacourse.torrent.client;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 

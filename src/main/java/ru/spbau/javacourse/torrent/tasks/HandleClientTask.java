@@ -30,6 +30,7 @@ public class HandleClientTask extends HandleTask {
         if (!record.isPresent()) {
             log.log(Level.WARNING, "ClientFileRecord id collision!");
             output.writeInt(0);
+            output.flush();
             return;
         }
 
