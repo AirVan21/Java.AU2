@@ -9,17 +9,24 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.text.Text;
+import javafx.stage.Stage;
 import ru.spbau.javacourse.torrent.client.Client;
+import ru.spbau.javacourse.torrent.database.enity.ClientFileRecord;
 import ru.spbau.javacourse.torrent.database.enity.SimpleFileRecord;
+
+import java.util.List;
+import java.util.Optional;
 
 public class ClientScene extends Scene {
     private final Client client;
-    private final ObservableList<String> localFiles = FXCollections.observableArrayList();
+    private final TorrentGUI gui;
+    private final ObservableList<ClientFileRecord> localFiles = FXCollections.observableArrayList();
     private final ObservableList<SimpleFileRecord> trackerFiles = FXCollections.observableArrayList();
 
-    public ClientScene(Client client) {
-        super(new GridPane(), 600, 500);
+    public ClientScene(Client client, TorrentGUI gui) {
+        super(new GridPane(), 600, 450);
         this.client = client;
+        this.gui = gui;
 
         GridPane grid = (GridPane) getRoot();
         grid.setAlignment(Pos.CENTER);
@@ -27,7 +34,7 @@ public class ClientScene extends Scene {
         grid.setVgap(15);
         grid.setPadding(new Insets(25, 25, 25, 25));
 
-        ListView<String> localView = new ListView<>();
+        ListView<ClientFileRecord> localView = new ListView<>();
         localView.setPrefSize(300, 250);
         localView.setPlaceholder(new Text("Local files"));
         localView.setItems(localFiles);
@@ -35,21 +42,63 @@ public class ClientScene extends Scene {
         updateLocalFiles();
 
         ListView<SimpleFileRecord> trackerView = new ListView<>();
-        trackerView.setPrefSize(300, 250);
+        trackerView.setPrefSize(300, 200);
         trackerView.setPlaceholder(new Text("Tracker files"));
         trackerView.setItems(trackerFiles);
         grid.add(trackerView, 1, 2);
+        trackerView.setOnMouseClicked(event -> {
+            final SimpleFileRecord record = trackerView.getSelectionModel().getSelectedItem();
+            if (record != null) {
+                startDownloadDialog(record);
+            }
+        });
+        updateTrackerFiles();
 
         Button listButton = new Button("List files");
-        grid.add(listButton, 0, 0);
-        listButton.setOnAction(event -> doList());
+        listButton.setOnAction(event -> updateTrackerFiles());
+        grid.add(listButton, 1, 0);
+
+        Button loadButton = createUploadButton();
+        grid.add(loadButton, 0, 0);
     }
 
-    private void doList() {
-
+    private void updateTrackerFiles() {
+        Optional<List<SimpleFileRecord>> records = client.doList();
+        if (records.isPresent()) {
+            trackerFiles.clear();
+            records.get().forEach(trackerFiles::add);
+        }
     }
 
     private void updateLocalFiles() {
-        
+        List<ClientFileRecord> records = client.getFileRecords("isPublished", true);
+        localFiles.clear();
+        records.forEach(localFiles::add);
+    }
+
+    private Button createUploadButton() {
+        Button loadButton = new Button("Upload file");
+        loadButton.setOnAction(event -> {
+            Optional<String> pathToFile = gui.getUploadFilePath();
+            if (pathToFile.isPresent()) {
+                try {
+                    client.doUpload(pathToFile.get());
+                    updateTrackerFiles();
+                    updateLocalFiles();
+                } catch (Exception e) {
+                    Stage dialog = gui.createWarning("Failed on uploading: " + e.getMessage());
+                    dialog.show();
+                }
+            }
+        });
+
+        return loadButton;
+    }
+
+    private void startDownloadDialog(SimpleFileRecord record) {
+        Stage dialog = gui.createDownloadDialog(record);
+        dialog.show();
+
+        List<ClientFileRecord> records = client.getFileRecords("fileServerId", record.getId());
     }
 }
