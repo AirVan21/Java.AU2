@@ -34,7 +34,7 @@ public class ClientApp extends Application {
 
         final Client client = new Client(GlobalConstants.DEFAULT_HOST, port);
         final TorrentGUI gui = new TorrentGUI(primaryStage, client);
-        gui.show();
+        gui.start();
     }
 
     public static void main(String[] args) {
