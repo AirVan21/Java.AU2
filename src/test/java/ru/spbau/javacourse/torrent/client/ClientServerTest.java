@@ -249,7 +249,7 @@ public class ClientServerTest {
         assertEquals(1, answer.get().size());
         SimpleFileRecord uploadedRecord = answer.get().get(0);
 
-        // First client asks Get()
+        // Second client asks Get()
         assertTrue(spyClientSnd.doGet(uploadedRecord.getId()));
         List<ClientFileRecord> downloadedRecords = spyClientSnd.getFileRecords("fileName", uploadedRecord.getName());
         assertEquals(1, downloadedRecords.size());
@@ -266,6 +266,85 @@ public class ClientServerTest {
         // Stops all
         spyClientFst.disconnectFromServer();
         spyClientSnd.disconnectFromServer();
+        spyTracker.stop();
+    }
+
+    @Test
+    public void doGetTest() throws IOException, InterruptedException {
+        // Creates tracker
+        Tracker spyTracker = spy(new Tracker());
+        spyTracker.start(SERVER_PORT);
+
+        // Creates first client
+        Client spyClientFst = runSpyClient(HOST_NAME, GlobalConstants.CLIENT_PORT_FST);
+
+        // Creates second client
+        Client spyClientSnd = runSpyClient(HOST_NAME, GlobalConstants.CLIENT_PORT_SND);
+
+        // Creates third client
+        Client spyClientThd = runSpyClient(HOST_NAME, GlobalConstants.CLIENT_PORT_THD);
+
+        // First client uploads file
+        final File file = createTemporaryFile(TEST_FILE_FST);
+        spyClientFst.doUpload(file.getAbsolutePath());
+
+        // doUpload
+        sleep(100);
+
+        // Second client asks List() - only uploaded file is available
+        Optional<List<SimpleFileRecord>> answer = spyClientSnd.doList();
+        assertEquals(1, answer.get().size());
+        SimpleFileRecord uploadedRecord = answer.get().get(0);
+
+        // Second client asks Stat() - only uploaded available as a seed
+        Optional<Map<User, List<Integer>>> stat = spyClientSnd.doStat(uploadedRecord.getId());
+        assertTrue(stat.isPresent());
+        assertEquals(1, stat.get().size());
+
+        // Checks that only first client is a seed
+        assertTrue(stat.get()
+                .keySet()
+                .iterator()
+                .next()
+                .getPort() == GlobalConstants.CLIENT_PORT_FST);
+
+        // Second client asks Get() - asserts that downloaded file with same id
+        assertTrue(spyClientSnd.doGet(uploadedRecord.getId()));
+        List<ClientFileRecord> downloadedRecords = spyClientSnd.getFileRecords("fileName", uploadedRecord.getName());
+        assertEquals(1, downloadedRecords.size());
+        ClientFileRecord downloadedRecord = downloadedRecords.get(0);
+        assertEquals(uploadedRecord.getId(), downloadedRecord.getFileServerId());
+
+        // Binary comparison of downloaded files
+        File downloadedFile = new File(downloadedRecord.getFilePath());
+        assertEquals(file.length(), downloadedFile.length());
+        assertTrue(FileUtils.contentEquals(file, downloadedFile));
+
+        // Second client sends update (now he is seed)
+        spyClientSnd.doUpdate();
+
+        // Third client asks Stat() (now we have got two seeds)
+        stat = spyClientThd.doStat(uploadedRecord.getId());
+        assertTrue(stat.isPresent());
+        assertEquals(2, stat.get().size());
+
+        // Third client asks Get() - asserts that downloaded file with same id
+        assertTrue(spyClientThd.doGet(uploadedRecord.getId()));
+
+        // Checks that third client loaded files
+        downloadedRecords = spyClientThd.getFileRecords("fileName", uploadedRecord.getName());
+        assertEquals(1, downloadedRecords.size());
+        downloadedRecord = downloadedRecords.get(0);
+        assertEquals(uploadedRecord.getId(), downloadedRecord.getFileServerId());
+
+        downloadedFile = new File(downloadedRecord.getFilePath());
+        assertEquals(file.length(), downloadedFile.length());
+        assertTrue(FileUtils.contentEquals(file, downloadedFile));
+
+        // Stops all
+        spyClientFst.disconnectFromServer();
+        spyClientSnd.disconnectFromServer();
+        spyClientThd.disconnectFromServer();
         spyTracker.stop();
     }
 

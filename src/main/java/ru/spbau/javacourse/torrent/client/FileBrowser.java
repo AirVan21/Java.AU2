@@ -45,7 +45,7 @@ public class FileBrowser {
     public synchronized void addAvailableChunk(int fileId, int chunkId) {
         log.log(Level.INFO, "add chunk = " + chunkId + " to fileId = " + fileId);
 
-        final List<ClientFileRecord> records = db.getFileRecords("fileServerId", fileId);
+        final List<ClientFileRecord> records = getClientFileRecords("fileServerId", fileId);
         if (records.size() != 1) {
             log.log(Level.WARNING, "Database has collision!");
             return;
@@ -54,6 +54,9 @@ public class FileBrowser {
         List<Integer> chunks = targetRecord.getAvailableChunks();
         chunks.add(chunkId);
         db.updateFileRecord(targetRecord, "availableChunks", chunks);
+        if (!targetRecord.isPublished()) {
+            db.updateFileRecord(targetRecord, "isPublished", true);
+        }
     }
 
     public synchronized void publishLocalFile(String fileName, int fileId) {

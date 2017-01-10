@@ -126,7 +126,7 @@ public class Client {
 
         final File file = new File(pathToFile);
         if (!file.exists() || file.isDirectory()) {
-            log.log(Level.WARNING, "File path if invalid: " + pathToFile);
+            log.log(Level.WARNING, "File path is invalid: " + pathToFile);
             return;
         }
 

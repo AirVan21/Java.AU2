@@ -12,4 +12,5 @@ public class GlobalConstants {
     public final static short TRACKER_PORT = 8081;
     public final static short CLIENT_PORT_FST = 8841;
     public final static short CLIENT_PORT_SND = 8842;
+    public final static short CLIENT_PORT_THD = 8843;
 }
