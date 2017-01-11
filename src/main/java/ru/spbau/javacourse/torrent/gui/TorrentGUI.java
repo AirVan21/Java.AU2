@@ -12,7 +12,6 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import lombok.extern.java.Log;
 import ru.spbau.javacourse.torrent.client.Client;
-import ru.spbau.javacourse.torrent.database.enity.SimpleFileRecord;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,19 +21,16 @@ import java.util.logging.Level;
 @Log
 public class TorrentGUI {
     private final Stage stage;
-    private final Client client;
-    private final Scene clientScene;
+    private final ClientScene clientScene;
 
-    public TorrentGUI(Stage stage, Client client) throws IOException {
+    public TorrentGUI(Stage stage) throws IOException {
         this.stage = stage;
-        this.client = client;
-        this.clientScene = new ClientScene(client, this);
+        this.clientScene = new ClientScene(this);
         this.stage.setScene(clientScene);
         addExitLogic();
     }
 
-    public void start() throws IOException {
-        client.connectToServer();
+    public void show() {
         stage.show();
     }
 
@@ -42,6 +38,9 @@ public class TorrentGUI {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Choose file for uploading");
         File file = fileChooser.showOpenDialog(stage);
+        if (file == null) {
+            return Optional.empty();
+        }
 
         return file.exists() ? Optional.of(file.getAbsolutePath()) : Optional.empty();
     }
@@ -49,7 +48,10 @@ public class TorrentGUI {
     private void addExitLogic() {
         stage.setOnCloseRequest(event -> {
             try {
-                client.disconnectFromServer();
+                Client client = clientScene.getClient();
+                if (client != null) {
+                    client.disconnectFromServer();
+                }
                 System.exit(0);
             } catch (IOException | InterruptedException e) {
                 log.log(Level.WARNING, "Error on exit!");
@@ -68,26 +70,17 @@ public class TorrentGUI {
         VBox box = new VBox(20);
         box.setAlignment(Pos.CENTER);
         pane.getChildren().add(new Text(message));
-
-        Button closeButton = new Button("Close");
-        closeButton.setOnAction(event -> dialog.close());
-        pane.getChildren().add(closeButton);
         dialog.setScene(new Scene(pane, 300, 250));
 
         return dialog;
     }
 
-    public Stage createDownloadDialog(SimpleFileRecord record) {
+    public Stage createDownloadDialog(VBox box) {
         Stage dialog = new Stage();
+
         dialog.initModality(Modality.APPLICATION_MODAL);
         dialog.initOwner(stage);
         dialog.setTitle("Download");
-
-        VBox box = new VBox(30);
-        box.setAlignment(Pos.CENTER);
-        box.getChildren().add(new Text("File: " + record.getName()));
-        box.getChildren().add(new Text("Size: " + record.getSize() + " bytes"));
-
         dialog.setScene(new Scene(box, 300, 200));
 
         return dialog;
