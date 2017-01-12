@@ -17,6 +17,7 @@ public abstract class Server {
      * @throws IOException
      */
     public synchronized void start(int port) throws IOException {
+        log.log(Level.INFO, "Starting traker on port = " + port);
         if (socket != null) {
             return;
         }
